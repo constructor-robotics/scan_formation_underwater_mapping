@@ -1,0 +1,29 @@
+For more information about SOFT 2.0 package, please see the file
+
+ soft20_fx.pdf
+
+
+
+
+If you don't have FFTW lib :
+
+ - either install it :
+
+	Ubuntu :
+	
+	$sudo apt-get install libfftw3-3 libfftw3-dev libfftw3-doc
+
+	Other, see :
+
+	www.fftw.org
+
+ - or catkin_make without FFTW
+
+	1. rename the CMakeLists.txt to CMakeLists.txt.fftw1
+
+	2. rename the CMakeLists.txt.fftw0 to CMakeLists.txt
+
+	3. catkin_make
+
+
+
