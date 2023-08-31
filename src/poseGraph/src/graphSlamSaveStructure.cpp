@@ -51,10 +51,7 @@ void graphSlamSaveStructure::isam2OptimizeGraph(bool verbose, int numberOfUpdate
 
 
 
-//    this->isam->printStats();
-//    this->graph.print();
-//    std::cout <<this->graph.size() << std::endl;
-//    std::cout <<this->isam->size() << std::endl;
+
     this->isam->update(this->graph,this->currentEstimate);
 
 
@@ -62,25 +59,10 @@ void graphSlamSaveStructure::isam2OptimizeGraph(bool verbose, int numberOfUpdate
         this->isam->update();
     }
 
-//    this->isam->printStats();
-//    std::cout << "######" << std::endl;
-//    this->currentEstimate.print();
-//    std::cout << "#" << std::endl;
     this->currentEstimate = this->isam->calculateEstimate();
-//    this->currentEstimate.print();
-//    std::cout << "######" << std::endl;
 
 
-//    this->isam->update();
-//    this->currentEstimate = this->isam->calculateEstimate();
-//    this->currentEstimate.print();
-//    std::cout << "######"<< std::endl;
-
-
-//    this->currentEstimate.print("Final Result:\n");
-//    gtsam::Marginals marginals(this->graph, this->currentEstimate);
-
-
+    // sort in the covariances and new positions
     for(int i  = 1 ; i<this->vertexList.size() ; i++){
         gtsam::Pose2 iterativePose = this->currentEstimate.at(this->vertexList[i].getKey()).cast<gtsam::Pose2>();
         this->vertexList.at(i).setPositionVertex(Eigen::Vector3d(iterativePose.x(),iterativePose.y(),0));
@@ -88,7 +70,6 @@ void graphSlamSaveStructure::isam2OptimizeGraph(bool verbose, int numberOfUpdate
 //        std::cout << "covariance:\n" << marginals.marginalCovariance(this->vertexList.at(i).getKey()) << std::endl;
 //        std::cout << "Pose :\n" << iterativePose << std::endl;
         this->vertexList.at(i).setCovarianceMatrix(this->isam->marginalCovariance(this->vertexList.at(i).getKey()));
-
     }
 
     this->graph.resize(0);
@@ -98,11 +79,7 @@ void graphSlamSaveStructure::isam2OptimizeGraph(bool verbose, int numberOfUpdate
 
 
 void graphSlamSaveStructure::classicalOptimizeGraph(bool verbose) {
-//    gtsam::GaussNewtonParams parameters;
-//    parameters.relativeErrorTol = 1e-5;
-//    parameters.maxIterations = 100;
-//    parameters.setVerbosity("ERROR");
-//    gtsam::GaussNewtonOptimizer optimizer(this->graph, this->currentEstimate, parameters);
+
 
     gtsam::LevenbergMarquardtParams params;
 //    params.setVerbosity("ERROR");
@@ -118,20 +95,6 @@ void graphSlamSaveStructure::classicalOptimizeGraph(bool verbose) {
     this->currentEstimate = optimizer.optimize();
 
 
-//    this->isam->printStats();
-//    std::cout << "######" << std::endl;
-//    this->currentEstimate.print();
-//    std::cout << "#" << std::endl;
-//    this->currentEstimate = this->isam->calculateEstimate();
-//    this->currentEstimate.print();
-//    std::cout << "######" << std::endl;
-
-
-//    this->isam->update();
-//    this->currentEstimate = this->isam->calculateEstimate();
-//    this->currentEstimate.print();
-//    std::cout << "######"<< std::endl;
-
 
 //    this->currentEstimate.print("Final Result:\n");
     gtsam::Marginals marginals(this->graph, this->currentEstimate);
@@ -141,14 +104,11 @@ void graphSlamSaveStructure::classicalOptimizeGraph(bool verbose) {
         gtsam::Pose2 iterativePose = this->currentEstimate.at(this->vertexList[i].getKey()).cast<gtsam::Pose2>();
         this->vertexList.at(i).setPositionVertex(Eigen::Vector3d(iterativePose.x(),iterativePose.y(),0));
         this->vertexList.at(i).setRotationVertex(generalHelpfulTools::getQuaternionFromRPY(0,0,iterativePose.theta()));
-//        std::cout << "covariance:\n" << marginals.marginalCovariance(this->vertexList.at(i).getKey()) << std::endl;
-//        std::cout << "Pose :\n" << iterativePose << std::endl;
+
         this->vertexList.at(i).setCovarianceMatrix(this->isam->marginalCovariance(this->vertexList.at(i).getKey()));
 
     }
 
-//    this->graph.resize(0);
-//    this->currentEstimate.clear();
 }
 
 void graphSlamSaveStructure::printCurrentState() {

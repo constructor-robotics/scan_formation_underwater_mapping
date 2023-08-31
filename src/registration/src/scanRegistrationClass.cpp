@@ -18,35 +18,6 @@ double scanRegistrationClass::sofftRegistrationVoxel2DRotationOnly(double voxelD
 
 }
 
-//Eigen::Vector2d
-//scanRegistrationClass::sofftRegistrationVoxel2DTranslation(double voxelData1Input[], double voxelData2Input[],
-//                                                           double &fitnessX, double &fitnessY, double cellSize,
-//                                                           Eigen::Vector3d initialGuess, bool useInitialGuess,
-//                                                           bool debug) {
-//
-//    return mySofftRegistrationClass.sofftRegistrationVoxel2DTranslation(voxelData1Input, voxelData2Input, fitnessX,
-//                                                                        fitnessY, cellSize, initialGuess,
-//                                                                        useInitialGuess, debug);
-//
-//}
-
-
-
-
-//Eigen::Vector2d scanRegistrationClass::sofftRegistrationVoxel2DTranslation(double voxelData1Input[],
-//                                                                           double voxelData2Input[],
-//                                                                           double &fitnessX, double &fitnessY,
-//                                                                           double cellSize,
-//                                                                           Eigen::Vector3d initialGuess,
-//                                                                           bool useInitialGuess,
-//                                                                           double &heightMaximumPeak, bool debug) {
-//
-//    this->mySofftRegistrationClass.sofftRegistrationVoxel2DTranslation(voxelData1Input, voxelData2Input, fitnessX,
-//                                                                       fitnessY, cellSize, initialGuess,
-//                                                                       useInitialGuess, heightMaximumPeak, debug);
-//
-//}
-
 Eigen::Matrix4d scanRegistrationClass::registrationOfTwoVoxelsSOFFTFast(double voxelData1Input[],
                                                                         double voxelData2Input[],
                                                                         Eigen::Matrix4d initialGuess,

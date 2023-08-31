@@ -1,0 +1,22 @@
+
+# dimension of the registration determines the accuracy and speed/
+dimensionOfRegistration: 128
+# radius of the sonar
+radiusOfScanSize: 10
+# the size N of the map that is published
+NSizeMap: 512
+# the dimension of the map
+mapDimension: 15.0
+#number of times a registration is performed for each full rotation
+howOftenRegistrationPerFullScan: 1.0
+#max distance for a loop closure
+loopClosureDistance: 0.3
+#direction of the scan( sonar on top of robot, or bottom of robot) if the angle turns right or left is not important, as long as the angles are correct.
+reverseScanDirection: false
+# where is the front? therefore a rotation
+rotationSonar: 3.14159
+# a small area, where the measurements are ignored. in our case 20cm around the sonar
+removeDistanceToRobot: 0.2
+
+
+

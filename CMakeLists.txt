@@ -14,24 +14,18 @@ project(scan_forming_underwater_mapping)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages cv_bridge PATHS "/usr/local/"
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp pcl_ros ping360_sonar waterlinked_dvl message_generation  commonbluerovmsg dynamic_reconfigure perception_oru tf2 tf2_ros)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp ping360_sonar waterlinked_dvl message_generation commonbluerovmsg dynamic_reconfigure)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV 4.7 REQUIRED )
-find_package(PCL 1.10 REQUIRED COMPONENTS common io visualization)
 find_package(OpenGR REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(GTSAM REQUIRED)
 find_package(Eigen3 3.3 REQUIRED)
 
-#include_directories("/usr/local/")
-include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 find_package(PythonLibs REQUIRED)
-find_package(gmm_registration REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
-#find_package(PkgConfig REQUIRED)
-#pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
-#include_directories(PkgConfig::FFTW)
-#link_libraries     (PkgConfig::FFTW)
+
 
 catkin_package()
 
@@ -40,15 +34,9 @@ catkin_package()
 ################################################################################
 
 add_library(findpeaks INTERFACE)
-
-
-
-
-
 target_include_directories(findpeaks INTERFACE
         src/find-peaks/include
         )
-
 add_library(UNION_FIND
         SHARED
         src/find-peaks/src/union_find.cpp
@@ -56,7 +44,6 @@ add_library(UNION_FIND
 target_include_directories(UNION_FIND PRIVATE
         src/find-peaks/include
         )
-
 target_link_libraries(findpeaks INTERFACE UNION_FIND)
 
 ################################################################################
@@ -66,7 +53,7 @@ add_library(generalinterface INTERFACE)
 target_include_directories(generalinterface INTERFACE src/generalInterface/include)
 
 ################################################################################
-# general interface
+# soft20, the registration FMS
 ################################################################################
 add_library(soft20 src/soft20/src/lib1/rotate_so3_fftw.c
         src/soft20/src/lib1/rotate_so3_utils.c
@@ -105,6 +92,12 @@ install(DIRECTORY src/soft20/include/soft20/
 target_include_directories( soft20 PUBLIC src/soft20/include)
 
 ################################################################################
+# json
+################################################################################
+add_library(json SHARED src/json/src/jsoncpp.cpp)
+target_include_directories(json PUBLIC src/json/include)
+
+################################################################################
 # generalhelpfullib
 ################################################################################
 add_library(generalhelpfullib SHARED src/generalHelpfulTools/src/generalHelpfulTools.cpp src/generalHelpfulTools/src/PeakFinder.cpp)
@@ -116,16 +109,8 @@ target_include_directories(generalhelpfullib PUBLIC ${catkin_INCLUDE_DIRS} src/g
 ################################################################################
 
 add_library(posegraph SHARED src/poseGraph/src/edge.cpp src/poseGraph/src/graphSlamSaveStructure.cpp src/poseGraph/src/vertex.cpp)
-target_link_libraries(posegraph PUBLIC generalinterface generalhelpfullib ${Eigen_LIBRARIES})
+target_link_libraries(posegraph PUBLIC generalinterface json generalhelpfullib ${Eigen_LIBRARIES})
 target_include_directories(posegraph PUBLIC ${catkin_INCLUDE_DIRS} src/poseGraph/include)
-
-################################################################################
-# fourier-mellin-registration
-################################################################################
-
-add_library(fmt_registration SHARED src/registration/src/image_registration.cpp src/registration/src/image_transforms.cpp src/registration/src/image_dft.cpp)
-target_link_libraries(fmt_registration PUBLIC ${Eigen_LIBRARIES})
-target_include_directories(fmt_registration PUBLIC src/registration/include ${catkin_INCLUDE_DIRS})
 
 
 ################################################################################
@@ -133,17 +118,17 @@ target_include_directories(fmt_registration PUBLIC src/registration/include ${ca
 ################################################################################
 
 add_library(registrationlib SHARED src/registration/src/scanRegistrationClass.cpp src/registration/src/sofftCorrelationClass.cpp src/registration/src/softDescriptorRegistration.cpp)
-target_link_libraries(registrationlib PUBLIC ${PCL_LIBRARIES} ${Eigen_LIBRARIES} ${OpenCV_LIBS} generalhelpfullib gr::algo findpeaks fmt_registration gmm_registration soft20)
-target_include_directories(registrationlib PUBLIC src/registration/include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+target_link_libraries(registrationlib PUBLIC  ${Eigen_LIBRARIES} ${OpenCV_LIBS} generalhelpfullib gr::algo findpeaks  gmm_registration soft20)
+target_include_directories(registrationlib PUBLIC src/registration/include ${catkin_INCLUDE_DIRS} )
+
 
 ################################################################################
 # slamtools
 ################################################################################
 
 add_library(slamtools SHARED src/slamTools/src/slamToolsRos.cpp)
-target_link_libraries(slamtools PUBLIC ${PCL_LIBRARIES} ${Eigen_LIBRARIES} posegraph registrationlib)
-target_include_directories(slamtools PUBLIC ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} src/slamTools/include)
-
+target_link_libraries(slamtools PUBLIC  ${Eigen_LIBRARIES} posegraph registrationlib)
+target_include_directories(slamtools PUBLIC ${catkin_INCLUDE_DIRS}  src/slamTools/include)
 
 
 ################################################################################

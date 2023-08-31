@@ -118,27 +118,27 @@ public:
         sofftCorrelationObject.~sofftCorrelationClass();
 
 
-//        free(this->resultingCorrelationDouble);
-//        fftw_free(this->resultingCorrelationComplex);
-//        fftw_free(this->resultingPhaseDiff2D );
-//        fftw_free(this->resultingShiftPeaks2D);
-//        fftw_free(this->magnitude1Shifted );
-//        fftw_free(this->magnitude2Shifted );
-//        fftw_free(this->voxelData1 );
-//        fftw_free(this->voxelData2 );
-//        fftw_free(this->spectrumOut );
-//        fftw_free(this->phase1);
-//        fftw_free(this->phase2);
-//        fftw_free(this->magnitude1 );
-//        fftw_free(this->magnitude2 );
-//        fftw_free(resampledMagnitudeSO3_1 );
-//        fftw_free(resampledMagnitudeSO3_2);
-//        fftw_free(resampledMagnitudeSO3_1TMP);
-//        fftw_free(resampledMagnitudeSO3_2TMP );
-//        fftw_free(inputSpacialData);
-//        fftw_destroy_plan(planFourierToVoxel2D);
-//        fftw_destroy_plan(planVoxelToFourier3D);
-//        fftw_destroy_plan(planVoxelToFourier2D);
+        free(this->resultingCorrelationDouble);
+        fftw_free(this->resultingCorrelationComplex);
+        fftw_free(this->resultingPhaseDiff2D );
+        fftw_free(this->resultingShiftPeaks2D);
+        fftw_free(this->magnitude1Shifted );
+        fftw_free(this->magnitude2Shifted );
+        fftw_free(this->voxelData1 );
+        fftw_free(this->voxelData2 );
+        fftw_free(this->spectrumOut );
+        fftw_free(this->phase1);
+        fftw_free(this->phase2);
+        fftw_free(this->magnitude1 );
+        fftw_free(this->magnitude2 );
+        fftw_free(resampledMagnitudeSO3_1 );
+        fftw_free(resampledMagnitudeSO3_2);
+        fftw_free(resampledMagnitudeSO3_1TMP);
+        fftw_free(resampledMagnitudeSO3_2TMP );
+        fftw_free(inputSpacialData);
+        fftw_destroy_plan(planFourierToVoxel2D);
+        fftw_destroy_plan(planVoxelToFourier3D);
+        fftw_destroy_plan(planVoxelToFourier2D);
 
 
     }
@@ -147,9 +147,6 @@ public:
     double
     getSpectrumFromVoxelData2D(double voxelData[], double magnitude[], double phase[], bool gaussianBlur = false);
 
-//    Eigen::Matrix4d
-//    registrationOfTwoVoxel2D(double voxelData1[], double voxelData2[], double &fitnessX, double &fitnessY,
-//                             double goodGuessAlpha, bool debug);
 
 
     double
@@ -160,12 +157,6 @@ public:
     sofftRegistrationVoxel2DListOfPossibleRotations(double voxelData1Input[], double voxelData2Input[],
                                                     bool debug = false, bool multipleRadii = false,
                                                     bool useClahe = true, bool useHamming = true);
-
-//    Eigen::Vector2d sofftRegistrationVoxel2DTranslation(double voxelData1Input[],
-//                                                        double voxelData2Input[],
-//                                                        double &fitnessX, double &fitnessY, double cellSize,
-//                                                        Eigen::Vector3d initialGuess, bool useInitialGuess,
-//                                                        double &heightMaximumPeak, bool debug = false);
 
     Eigen::Matrix4d registrationOfTwoVoxelsSOFFTFast(double voxelData1Input[],
                                                      double voxelData2Input[],

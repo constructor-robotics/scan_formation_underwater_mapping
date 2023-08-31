@@ -54,13 +54,6 @@ Eigen::Matrix4d generalHelpfulTools::interpolationTwo4DTransformations(Eigen::Ma
     Eigen::Quaterniond rot1(transformation1.block<3, 3>(0, 0));
     Eigen::Quaterniond rot2(transformation2.block<3, 3>(0, 0));
 
-//    Eigen::Quaterniond rotTMP = rot1.inverse()*rot2;
-//    Eigen::Quaterniond resultingRot = rotTMP.slerp(t, Eigen::Quaterniond(1,0,0,0));
-//    Eigen::Vector3d resultingTranslation = (translation2-translation1)*t;
-//    Eigen::Matrix4d resultingTransformation = Eigen::Matrix4d::Identity();
-//    resultingTransformation.block<3, 3>(0, 0) = resultingRot.toRotationMatrix();
-//    resultingTransformation.block<3, 1>(0, 3) = resultingTranslation;
-
     Eigen::Quaterniond resultingRot = rot1.slerp(t, rot2);
     Eigen::Vector3d resultingTranslation = translation1 * t + translation2 * (1.0 - t);
 

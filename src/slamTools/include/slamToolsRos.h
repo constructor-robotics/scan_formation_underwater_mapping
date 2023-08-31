@@ -6,13 +6,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include "nav_msgs/Path.h"
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <pcl/registration/icp.h>
-#include <pcl/registration/gicp.h>
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/common/projection_matrix.h>
+
 #include <random>
 #include "scanRegistrationClass.h"
 //#include "generalHelpfulTools.h"
@@ -83,18 +77,6 @@ public:
                                      Eigen::Matrix4d transformationInTheEndOfCalculation,
                                      int numberOfPoints, graphSlamSaveStructure &usedGraph,
                                      double ignoreDistanceToRobot, double dimensionOfVoxelData);
-
-    static pcl::PointCloud<pcl::PointXYZ> createPCLFromGraphOneValue(int indexStart,
-                                                                     Eigen::Matrix4d transformationInTheEndOfCalculation,
-                                                                     graphSlamSaveStructure &usedGraph,
-                                                                     double ignoreDistanceToRobo,
-                                                                     double thresholdFactorPoint);
-
-    static pcl::PointCloud<pcl::PointXYZ> createPCLFromGraphOnlyThreshold(int indexStart,
-                                                                          Eigen::Matrix4d transformationInTheEndOfCalculation,
-                                                                          graphSlamSaveStructure &usedGraph,
-                                                                          double ignoreDistanceToRobo,
-                                                                          double thresholdFactorPoint);
 
     static bool getNodes(ros::V_string &nodes);
 
@@ -176,27 +158,7 @@ public:
                                                  Eigen::Matrix4d initialGuess);
 
     static bool
-    simpleLoopDetectionByKeyFrames(graphSlamSaveStructure &graphSaved,
-                                   scanRegistrationClass &scanRegistrationObject,
-                                   int dimensionOfVoxelData,
-                                   double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                   double maxLoopClosure,
-                                   bool debugRegistration);
-
-    static bool
     calculateEndIndexForVoxelCreationByStartIndex(int indexStart, int &indexEnd, graphSlamSaveStructure &usedGraph);
-
-    static pcl::PointCloud<pcl::PointXYZ>
-    convertVoxelToPointcloud(double voxelData[], double thresholdFactor, double maximumVoxelData, int dimensionVoxel,double dimensionOfVoxelDataForMatching);
-
-    static Eigen::Matrix4d registrationOfDesiredMethod(pcl::PointCloud<pcl::PointXYZ> pclNotShifted,
-                                                                     pcl::PointCloud<pcl::PointXYZ> pclShifted,
-                                                                     pcl::PointCloud<pcl::PointXYZ> &final, double voxelData[],
-                                                                     double voxelDataShifted[],
-                                                                     Eigen::Matrix4d initialGuess, double currentCellSize,
-                                                                     int whichMethod, bool useInitialGuess,
-                                                                     scanRegistrationClass &scanRegistrationObject);
-
 
     };
 
