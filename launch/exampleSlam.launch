@@ -1,0 +1,7 @@
+<launch>
+
+    <node  pkg="scan_forming_underwater_mapping" name="rosslamexp1" type="rosslamexp1" output="screen">
+        <rosparam command="load" file="$(find scan_forming_underwater_mapping)/config/SLAMsetting.yaml" />
+    </node>
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find scan_forming_underwater_mapping)/rvizconfig/slamView.rviz" />
+</launch>

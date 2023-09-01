@@ -45,7 +45,7 @@ public:
         publisherPathOverTime = n_.advertise<nav_msgs::Path>("positionOverTime", 10);
         publisherMarkerArray = n_.advertise<visualization_msgs::MarkerArray>("covariance", 10);
         publisherMarkerArrayLoopClosures = n_.advertise<visualization_msgs::MarkerArray>("loopClosures", 10);
-        publisherOccupancyMap = n_.advertise<nav_msgs::OccupancyGrid>("occupancyHilbertMap", 10);
+        publisherOccupancyMap = n_.advertise<nav_msgs::OccupancyGrid>("occupancyMap", 10);
 
         publisherPoseSLAM = n_.advertise<geometry_msgs::PoseStamped>("slamEndPose", 10);
 
@@ -721,24 +721,23 @@ int main(int argc, char **argv) {
     ros::NodeHandle n_;
 
     int dimensionOfRegistration;
-    n_.getParam("/dimensionOfRegistration", dimensionOfRegistration);
+    n_.getParam("rosslamexp1/dimensionOfRegistration", dimensionOfRegistration);
     double radiusOfScanSize;
-    n_.getParam("/radiusOfScanSize", radiusOfScanSize);
+    n_.getParam("rosslamexp1/radiusOfScanSize", radiusOfScanSize);
     int NSizeMap;
-    n_.getParam("/NSizeMap", NSizeMap);
+    n_.getParam("rosslamexp1/NSizeMap", NSizeMap);
     double mapDimension;
-    n_.getParam("/mapDimension", mapDimension);
+    n_.getParam("rosslamexp1/mapDimension", mapDimension);
     double howOftenRegistrationPerFullScan;
-    n_.getParam("/howOftenRegistrationPerFullScan", howOftenRegistrationPerFullScan);
+    n_.getParam("rosslamexp1/howOftenRegistrationPerFullScan", howOftenRegistrationPerFullScan);
     double loopClosureDistance;
-    n_.getParam("/loopClosureDistance", loopClosureDistance);
+    n_.getParam("rosslamexp1/loopClosureDistance", loopClosureDistance);
     bool reverseScanDirection;
-    n_.getParam("/reverseScanDirection", reverseScanDirection);
+    n_.getParam("rosslamexp1/reverseScanDirection", reverseScanDirection);
     double rotationSonar;
-    n_.getParam("/rotationSonar", rotationSonar);
+    n_.getParam("rosslamexp1/rotationSonar", rotationSonar);
     double removeDistanceToRobot;
-    n_.getParam("/removeDistanceToRobot", removeDistanceToRobot);
-
+    n_.getParam("rosslamexp1/removeDistanceToRobot", removeDistanceToRobot);
 
 
 

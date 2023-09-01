@@ -12,7 +12,6 @@
 class vertex {
 
 public:
-    //no point cloud or intensities
     vertex(int vertexNumber, const Eigen::Vector3d &positionVertex, const Eigen::Quaterniond &rotationVertex,
            int degreeOfFreedom, const Eigen::Matrix3d &covariance,
            double timeStamp, int typeOfVertex) {
@@ -81,11 +80,11 @@ public:
     [[nodiscard]] intensityMeasurement getIntensities() const;
 
     void setIntensities(const intensityMeasurement &intensitiesInput);
-
+    //Only used in other setups. can be used for ground truth calculations
     [[nodiscard]] Eigen::Matrix4d getGroundTruthTransformation() const;
 
     void setGroundTruthTransformation(Eigen::Matrix4d inputMatrix);
-
+    //can be used for classical slam, where full scans are positioned in one vertex
     void setIntensityScan(double *inputVoxelData, int sizeVoxelData);
 
     void getIntensityScan(double *outputVoxelData, int sizeVoxelData);

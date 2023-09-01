@@ -17,10 +17,10 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Min_sphere_of_spheres_d.h>
-#include <CGAL/Min_sphere_of_points_d_traits_2.h>
-#include <CGAL/Random.h>
+//#include <CGAL/Simple_cartesian.h>
+//#include <CGAL/Min_sphere_of_spheres_d.h>
+//#include <CGAL/Min_sphere_of_points_d_traits_2.h>
+//#include <CGAL/Random.h>
 
 #include <iostream>
 #include <fstream>

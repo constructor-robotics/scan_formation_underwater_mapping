@@ -5,7 +5,6 @@
 #include "vertex.h"
 #include <fstream>
 #include<Eigen/SparseCholesky>
-#include "json.h"
 #include <chrono>
 #include "generalHelpfulTools.h"
 //gtsam includes
@@ -72,8 +71,6 @@ public:
     void isam2OptimizeGraph(bool verbose, int numberOfUpdates = 10);
 
     void classicalOptimizeGraph(bool verbose);
-
-    void saveGraphJson(std::string nameSavingFile);
 
     void addRandomNoiseToGraph(double stdDiviationGauss, double percentageOfRandomNoise);
 

@@ -167,34 +167,6 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
 
 }
 
-std::vector<measurement> slamToolsRos::parseCSVFile(std::istream &stream) {
-    std::vector<measurement> returnVector;
-
-    std::string firstLine;
-    std::getline(stream, firstLine);
-
-    //std::stringstream          lineStream(line);
-    std::string cell;
-
-
-    for (std::string line; std::getline(stream, line);) {
-        std::stringstream lineStream(line);
-        std::vector<std::string> result;
-        while (std::getline(lineStream, cell, ',')) {
-            result.push_back(cell);
-            //std::cout << cell << std::endl;
-        }
-        measurement tmpMeas{};
-        tmpMeas.keyframe = std::stoi(result[0]);
-        tmpMeas.x = std::stof(result[1]);
-        tmpMeas.y = std::stof(result[2]);
-        tmpMeas.z = std::stof(result[3]);
-        tmpMeas.timeStamp = std::stof(result[4]);
-        returnVector.push_back(tmpMeas);
-    }
-    return returnVector;
-}
-
 std::vector<std::vector<measurement>> slamToolsRos::sortToKeyframe(std::vector<measurement> &input) {
     int currentKeyframe = input[0].keyframe;
     std::vector<std::vector<measurement>> output;
@@ -607,29 +579,6 @@ double slamToolsRos::createVoxelOfGraphStartEndPoint(double voxelData[], int ind
 
 
 
-bool slamToolsRos::getNodes(ros::V_string &nodes) {
-    XmlRpc::XmlRpcValue args, result, payload;
-    args[0] = ros::this_node::getName();
-
-    if (!ros::master::execute("getSystemState", args, result, payload, true)) {
-        return false;
-    }
-
-    ros::S_string node_set;
-    for (int i = 0; i < payload.size(); ++i) {
-        for (int j = 0; j < payload[i].size(); ++j) {
-            XmlRpc::XmlRpcValue val = payload[i][j][1];
-            for (int k = 0; k < val.size(); ++k) {
-                std::string name = payload[i][j][1][k];
-                node_set.insert(name);
-            }
-        }
-    }
-
-    nodes.insert(nodes.end(), node_set.begin(), node_set.end());
-
-    return true;
-}
 
 edge
 slamToolsRos::calculatePoseDiffByTimeDepOnEKF(double startTimetoAdd, double endTimeToAdd,
@@ -910,95 +859,6 @@ bool slamToolsRos::calculateEndIndexForVoxelCreationByStartIndex(int indexStart,
     return true;
 }
 
-void slamToolsRos::updateRegistration(int numberOfEdge, graphSlamSaveStructure &usedGraph, int dimensionOfVoxelData,
-                                      double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                      scanRegistrationClass &scanRegistrationObject,
-                                      bool debugRegistration) {
-
-    int tmpFromKey = usedGraph.getEdgeList()->at(numberOfEdge).getFromKey();
-    int tmpToKey = usedGraph.getEdgeList()->at(numberOfEdge).getToKey();
-
-
-    //match these voxels together
-    Eigen::Matrix4d initialGuessTransformation =
-            usedGraph.getVertexList()->at(tmpFromKey).getTransformation().inverse() *
-            usedGraph.getVertexList()->at(tmpToKey).getTransformation();
-
-    double initialGuessAngle = std::atan2(initialGuessTransformation(1, 0),
-                                          initialGuessTransformation(0, 0));
-    double fitnessScoreX, fitnessScoreY;
-
-    double *voxelData1;
-    double *voxelData2;
-    voxelData1 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-    voxelData2 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-
-    double maximumVoxel1 = slamToolsRos::createVoxelOfGraph(voxelData1,
-                                                            tmpFromKey,
-                                                            Eigen::Matrix4d::Identity(),
-                                                            dimensionOfVoxelData, usedGraph,
-                                                            ignoreDistanceToRobot,
-                                                            distanceOfVoxelDataLengthSI);//get voxel
-
-
-    double maximumVoxel2 = slamToolsRos::createVoxelOfGraph(voxelData2,
-                                                            tmpToKey,
-                                                            Eigen::Matrix4d::Identity(),
-                                                            dimensionOfVoxelData, usedGraph,
-                                                            ignoreDistanceToRobot,
-                                                            distanceOfVoxelDataLengthSI);//get voxel
-
-    // transform from 1 to 2
-//         currentTransformation = scanRegistrationObject.registrationOfTwoVoxelsSOFFTFast(
-//                voxelData1, voxelData2,
-//                 initialGuessTransformation, true,
-//                true, (double) distanceOfVoxelDataLengthSI /
-//                      (double) dimensionOfVoxelData, true, debugRegistration);
-    Eigen::Matrix3d covarianceEstimation = Eigen::Matrix3d::Zero();
-    Eigen::Matrix4d currentTransformation = slamToolsRos::registrationOfTwoVoxels(voxelData1, voxelData2,
-                                                                                  initialGuessTransformation,
-                                                                                  covarianceEstimation, true,
-                                                                                  true,
-                                                                                  (double) distanceOfVoxelDataLengthSI /
-                                                                                  (double) dimensionOfVoxelData, true,
-                                                                                  scanRegistrationObject,
-                                                                                  debugRegistration);
-    slamToolsRos::saveResultingRegistration(voxelData1, voxelData2, usedGraph, dimensionOfVoxelData,
-                                            ignoreDistanceToRobot, distanceOfVoxelDataLengthSI, debugRegistration,
-                                            currentTransformation);
-
-    double differenceAngleBeforeAfter = generalHelpfulTools::angleDiff(
-            std::atan2(currentTransformation(1, 0), currentTransformation(0, 0)),
-            initialGuessAngle);
-
-
-    std::cout << "FitnessScore X: " << fitnessScoreX << " FitnessScore Y: " << fitnessScoreY << std::endl;
-
-    std::cout << "currentTransformation:" << std::endl;
-    std::cout << currentTransformation << std::endl;
-
-    std::cout << "initial Guess Transformation:" << std::endl;
-    std::cout << initialGuessTransformation << std::endl;
-
-
-    std::cout << "Initial guess angle: "
-              << initialGuessAngle * 180 / M_PI
-              << std::endl;
-    std::cout << "Registration angle: "
-              << std::atan2(currentTransformation(1, 0), currentTransformation(0, 0)) * 180 / M_PI
-              << std::endl;
-    std::cout << "difference of angle after Registration: " << differenceAngleBeforeAfter * 180 / M_PI
-              << std::endl;
-    //only if angle diff is smaller than 10 degreece its ok
-
-//        usedGraph.getEdgeList()->at(numberOfEdge).setPositionDifference( currentTransformation.block<3, 1>(0, 3));
-//        usedGraph.getEdgeList()->at(numberOfEdge).setRotationDifference(Eigen::Quaterniond( currentTransformation.block<3, 3>(0, 0)));
-    usedGraph.setPoseDifferenceEdge(numberOfEdge, currentTransformation);
-
-    free(voxelData1);
-    free(voxelData2);
-
-}
 
 //creates transformation from voxel 1 to be close to voxel 2
 Eigen::Matrix4d slamToolsRos::registrationOfTwoVoxels(double voxelData1Input[],

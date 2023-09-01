@@ -46,10 +46,10 @@ struct intensityValues {
     Eigen::Matrix4d transformation;
     intensityMeasurement intensity;
 };
-struct transformationStamped {
-    Eigen::Matrix4d transformation;
-    double timeStamp;
-};
+//struct transformationStamped {
+//    Eigen::Matrix4d transformation;
+//    double timeStamp;
+//};
 
 class slamToolsRos {
 
@@ -59,8 +59,6 @@ public:
                                           ros::Publisher &publisherMarker, double sigmaScaling,
                                           ros::Publisher &publisherPoseSlam, ros::Publisher &publisherLoopClosures);
 
-    static std::vector<measurement>
-    parseCSVFile(std::istream &stream);//this is first line description then keyframe,x,y,z,timestamp
 
     static std::vector<std::vector<measurement>> sortToKeyframe(std::vector<measurement> &input);
 
@@ -78,7 +76,6 @@ public:
                                      int numberOfPoints, graphSlamSaveStructure &usedGraph,
                                      double ignoreDistanceToRobot, double dimensionOfVoxelData);
 
-    static bool getNodes(ros::V_string &nodes);
 
     static edge
     calculatePoseDiffByTimeDepOnEKF(double startTimetoAdd, double endTimeToAdd, std::deque<double> &timeVector,
@@ -107,10 +104,6 @@ public:
     static bool calculateStartAndEndIndexForVoxelCreation(int indexMiddle, int &indexStart, int &indexEnd,
                                                           graphSlamSaveStructure &usedGraph);
 
-    static void updateRegistration(int numberOfEdge, graphSlamSaveStructure &usedGraph, int dimensionOfVoxelData,
-                                   double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                   scanRegistrationClass &scanRegistrationObject,
-                                   bool debugRegistration);
 
     static Eigen::Matrix4d registrationOfTwoVoxels(double voxelData1Input[],
                                                    double voxelData2Input[],

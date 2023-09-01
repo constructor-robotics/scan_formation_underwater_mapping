@@ -31,11 +31,11 @@ public:
     static void
     smooth_curve(const std::vector<double> &input, std::vector<double> &smoothedOutput, int window_half_width);
 
-    static Eigen::Matrix4d convertMatrixFromOurSystemToOpenCV(Eigen::Matrix4d inputMatrix);
+//    static Eigen::Matrix4d convertMatrixFromOurSystemToOpenCV(Eigen::Matrix4d inputMatrix);
 
     static double normalizeAngle(double inputAngle);
 
-    static std::vector<std::string> getNextLineAndSplitIntoTokens(std::istream &str);
+//    static std::vector<std::string> getNextLineAndSplitIntoTokens(std::istream &str);
 };
 
 

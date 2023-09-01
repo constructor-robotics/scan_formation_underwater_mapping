@@ -4,10 +4,10 @@
 #include <iostream>
 
 #include "softDescriptorRegistration.h"
-#include "gr/algorithms/match4pcsBase.h"
-#include "gr/algorithms/FunctorSuper4pcs.h"
-#include "gr/utils/geometry.h"
-#include <gr/algorithms/PointPairFilter.h>
+//#include "gr/algorithms/match4pcsBase.h"
+//#include "gr/algorithms/FunctorSuper4pcs.h"
+//#include "gr/utils/geometry.h"
+//#include <gr/algorithms/PointPairFilter.h>
 
 
 #include <Eigen/Dense>
@@ -27,7 +27,7 @@ public:
     scanRegistrationClass(int N = 64, int bwOut = 64 / 2, int bwIn = 64 / 2, int degLim = 64 / 2 - 1)
             : mySofftRegistrationClass(N, bwOut, bwIn, degLim) {
         sizeVoxelData = N;
-
+        // the mutex is used for making it possible to just call for a registration in different threads.
         oursMutex = new std::mutex();
 
 

@@ -111,17 +111,17 @@ void generalHelpfulTools::smooth_curve(const std::vector<double> &input, std::ve
 }
 
 
-Eigen::Matrix4d generalHelpfulTools::convertMatrixFromOurSystemToOpenCV(Eigen::Matrix4d inputMatrix) {
-
-//    return(generalHelpfulTools::getTransformationMatrixFromRPY(0, 0, 180.0 / 180.0 * M_PI)*inputMatrix);
-    double x1 = inputMatrix(0, 3);
-    double y1 = inputMatrix(1, 3);
-    inputMatrix(0, 3) = y1;
-    inputMatrix(1, 3) = x1;
-    Eigen::Matrix3d tmpMatrix = inputMatrix.block<3, 3>(0, 0).inverse();
-    inputMatrix.block<3, 3>(0, 0) = tmpMatrix;
-    return inputMatrix;
-}
+//Eigen::Matrix4d generalHelpfulTools::convertMatrixFromOurSystemToOpenCV(Eigen::Matrix4d inputMatrix) {
+//
+////    return(generalHelpfulTools::getTransformationMatrixFromRPY(0, 0, 180.0 / 180.0 * M_PI)*inputMatrix);
+//    double x1 = inputMatrix(0, 3);
+//    double y1 = inputMatrix(1, 3);
+//    inputMatrix(0, 3) = y1;
+//    inputMatrix(1, 3) = x1;
+//    Eigen::Matrix3d tmpMatrix = inputMatrix.block<3, 3>(0, 0).inverse();
+//    inputMatrix.block<3, 3>(0, 0) = tmpMatrix;
+//    return inputMatrix;
+//}
 
 
 double generalHelpfulTools::normalizeAngle(double inputAngle){
@@ -135,23 +135,23 @@ double generalHelpfulTools::normalizeAngle(double inputAngle){
 
 }
 
-std::vector<std::string> generalHelpfulTools::getNextLineAndSplitIntoTokens(std::istream &str) {
-    std::vector<std::string> result;
-    std::string line;
-    std::getline(str, line);
-
-    std::stringstream lineStream(line);
-    std::string cell;
-
-    while (std::getline(lineStream, cell, ',')) {
-        result.push_back(cell);
-    }
-    // This checks for a trailing comma with no data after it.
-    if (!lineStream && cell.empty()) {
-        // If there was a trailing comma then add an empty element.
-        result.push_back("");
-    }
-    return result;
-}
+//std::vector<std::string> generalHelpfulTools::getNextLineAndSplitIntoTokens(std::istream &str) {
+//    std::vector<std::string> result;
+//    std::string line;
+//    std::getline(str, line);
+//
+//    std::stringstream lineStream(line);
+//    std::string cell;
+//
+//    while (std::getline(lineStream, cell, ',')) {
+//        result.push_back(cell);
+//    }
+//    // This checks for a trailing comma with no data after it.
+//    if (!lineStream && cell.empty()) {
+//        // If there was a trailing comma then add an empty element.
+//        result.push_back("");
+//    }
+//    return result;
+//}
 
 

@@ -91,11 +91,7 @@ install(DIRECTORY src/soft20/include/soft20/
 
 target_include_directories( soft20 PUBLIC src/soft20/include)
 
-################################################################################
-# json
-################################################################################
-add_library(json SHARED src/json/src/jsoncpp.cpp)
-target_include_directories(json PUBLIC src/json/include)
+
 
 ################################################################################
 # generalhelpfullib
@@ -109,7 +105,7 @@ target_include_directories(generalhelpfullib PUBLIC ${catkin_INCLUDE_DIRS} src/g
 ################################################################################
 
 add_library(posegraph SHARED src/poseGraph/src/edge.cpp src/poseGraph/src/graphSlamSaveStructure.cpp src/poseGraph/src/vertex.cpp)
-target_link_libraries(posegraph PUBLIC generalinterface json generalhelpfullib ${Eigen_LIBRARIES})
+target_link_libraries(posegraph PUBLIC generalinterface generalhelpfullib ${Eigen_LIBRARIES})
 target_include_directories(posegraph PUBLIC ${catkin_INCLUDE_DIRS} src/poseGraph/include)
 
 

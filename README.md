@@ -1,3 +1,20 @@
 # scan_formation_underwater_mapping
 Code for paper: Synthetic Scan Formation for Underwater Mapping with Low-Cost Mechanical Scanning Sonars (MSS)
 Currently under Construction until Mid Oktober. Come back when its done.
+
+Needs the following packages to be installed:
+The messages for the example Bag File:
+1. `https://github.com/Zarbokk/commonBlueROVMSG.git`
+
+2. `https://github.com/GSO-soslab/waterlinked_dvl_ros`
+
+Special Librarys necessary:
+1. GTsam `https://github.com/borglab/gtsam.git`
+2. OpenCV 4.7 `https://github.com/opencv/opencv.git`
+
+All the other Libraries are either standard(Eigen, ROS, OpenGT etc.), or inside this package.(FMS registration, Peak detection, Json)
+An Example Bag, where the SLAM can be performed on is at XXX 
+
+
+
+

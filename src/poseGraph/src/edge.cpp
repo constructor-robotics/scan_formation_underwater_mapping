@@ -68,7 +68,7 @@ int edge::getTypeOfEdge() const {
     return typeOfEdge;
 }
 
-void edge::setTypeOfEdge(int &typeOfEdgeInput) {// 0=pointCloud    %%%%%%%%%   1 = integratedPosDiff
+void edge::setTypeOfEdge(int &typeOfEdgeInput) {
     this->typeOfEdge = typeOfEdgeInput;
 }
 
@@ -80,7 +80,7 @@ Eigen::Matrix4d edge::getTransformation() const{
     transformation << 1, 0, 0, this->positionDifference.x(),
             0, 1, 0, this->positionDifference.y(),
             0, 0, 1, this->positionDifference.z(),
-            0, 0, 0, 1;//transformation missing currently
+            0, 0, 0, 1;
     Eigen::Matrix3d m(this->rotationDifference.toRotationMatrix());
     transformation.block<3, 3>(0, 0) = m;
     return transformation;

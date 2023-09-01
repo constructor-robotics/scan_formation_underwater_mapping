@@ -137,49 +137,6 @@ std::vector<edge> *graphSlamSaveStructure::getEdgeList() {
 }
 
 
-
-
-void graphSlamSaveStructure::saveGraphJson(std::string nameSavingFile) {
-
-//    Json::Value keyFrames;
-//
-//    int currentKeyFrameNumber = 0;
-//    for (int i = 0; i < this->vertexList.size(); i++) {
-//        if (this->vertexList[i].getTypeOfVertex() == POINT_CLOUD_SAVED) {
-//            // if point cloud is used then save this keyframe
-//            Json::Value positionOfKeyframe;
-//            positionOfKeyframe["x"] = this->vertexList[i].getPositionVertex()[0];
-//            positionOfKeyframe["y"] = this->vertexList[i].getPositionVertex()[1];
-//            positionOfKeyframe["z"] = this->vertexList[i].getPositionVertex()[2];
-//            positionOfKeyframe["roll"] = 0;
-//            positionOfKeyframe["pitch"] = 0;
-//            positionOfKeyframe["yaw"] = this->getYawAngle(this->vertexList[i].getRotationVertex());
-//            Json::Value pointCloud;
-//
-//            for (int j = 0; j < this->vertexList[i].getPointCloudCorrected()->points.size(); j++) {
-//                Json::Value tmpPoint;
-//                tmpPoint["x"] = this->vertexList[i].getPointCloudCorrected()->points[j].x;
-//                tmpPoint["y"] = this->vertexList[i].getPointCloudCorrected()->points[j].y;
-//                tmpPoint["z"] = this->vertexList[i].getPointCloudCorrected()->points[j].z;
-//                pointCloud[j]["point"] = tmpPoint;
-//            }
-//            keyFrames[currentKeyFrameNumber]["position"] = positionOfKeyframe;
-//            keyFrames[currentKeyFrameNumber]["pointCloud"] = pointCloud;
-//            currentKeyFrameNumber++;
-//        }
-//    }
-//
-//    // create the main object
-//    Json::Value outputText;
-//    outputText["keyFrames"] = keyFrames;
-//
-//    std::ofstream ifs;
-//    ifs.open(nameSavingFile);
-//    ifs << outputText << '\n';
-//    ifs.close();
-}
-
-
 void graphSlamSaveStructure::addRandomNoiseToGraph(double stdDiviationGauss, double percentageOfRandomNoise) {
 
     std::random_device rd;

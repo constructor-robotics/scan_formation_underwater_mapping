@@ -13,7 +13,7 @@ howOftenRegistrationPerFullScan: 1.0
 loopClosureDistance: 0.3
 #direction of the scan( sonar on top of robot, or bottom of robot) if the angle turns right or left is not important, as long as the angles are correct.
 reverseScanDirection: false
-# where is the front? therefore a rotation
+# where is the front? therefore a rotation of the sonar.
 rotationSonar: 3.14159
 # a small area, where the measurements are ignored. in our case 20cm around the sonar
 removeDistanceToRobot: 0.2
