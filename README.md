@@ -1,11 +1,10 @@
 # scan_formation_underwater_mapping
-Code for paper: Synthetic Scan Formation for Underwater Mapping with Low-Cost Mechanical Scanning Sonars (MSS)
-Currently under Construction until Mid Oktober. Come back when its done.
+ROS Package for paper: Synthetic Scan Formation for Underwater Mapping with Low-Cost Mechanical Scanning Sonars (MSS)
+Currently under Construction(nearly done, already working)
 
 Needs the following packages to be installed:
 The messages for the example Bag File:
 1. `https://github.com/Zarbokk/commonBlueROVMSG.git`
-
 2. `https://github.com/GSO-soslab/waterlinked_dvl_ros`
 
 Special Librarys necessary:

@@ -828,17 +828,6 @@ bool softDescriptorRegistration::isPeak(cv::Mat mx[], std::vector<cv::Point> &co
     return isPeakEle;
 }
 
-void softDescriptorRegistration::imextendedmax_imreconstruct(cv::Mat g, cv::Mat f, cv::Mat &dest) {
-
-    cv::Mat m0, m1, m;
-    m1 = f;
-    do {
-        m0 = m1.clone();
-        cv::dilate(m0, m, cv::Mat());
-        cv::min(g, m, m1);
-    } while (cv::countNonZero(m1 != m0) != 0);
-    dest = m1.clone();
-}
 
 
 
