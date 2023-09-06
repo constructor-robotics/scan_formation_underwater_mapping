@@ -1,6 +1,7 @@
 //
 // Created by tim on 26.03.21.
 //
+
 #include <ros/ros.h>
 #include "graphSlamSaveStructure.h"
 #include <visualization_msgs/Marker.h>
@@ -9,47 +10,15 @@
 
 #include <random>
 #include "scanRegistrationClass.h"
-//#include "generalHelpfulTools.h"
 
 #ifndef SIMULATION_BLUEROV_SLAMTOOLSROS_H
 #define SIMULATION_BLUEROV_SLAMTOOLSROS_H
-
-struct measurement {
-    int keyframe;
-    double x;
-    double y;
-    double z;
-    double timeStamp;
-};
-struct ImuData {
-    double ax;//linear acceleration
-    double ay;//linear acceleration
-    double az;//linear acceleration
-    double wx;//angular velocity
-    double wy;//angular velocity
-    double wz;//angular velocity
-    double roll;//from g measured
-    double pitch;//from g measured
-    double yaw;//mostly useless
-    double timeStamp;
-};
-
-struct DvlData {
-    double vx; // linear body velocity
-    double vy; // linear body velocity
-    double vz; // linear body velocity
-    double height; // above sea
-    double timeStamp;
-};
 
 struct intensityValues {
     Eigen::Matrix4d transformation;
     intensityMeasurement intensity;
 };
-//struct transformationStamped {
-//    Eigen::Matrix4d transformation;
-//    double timeStamp;
-//};
+
 
 class slamToolsRos {
 
@@ -60,21 +29,11 @@ public:
                                           ros::Publisher &publisherPoseSlam, ros::Publisher &publisherLoopClosures);
 
 
-    static std::vector<std::vector<measurement>> sortToKeyframe(std::vector<measurement> &input);
-
-    static void
-    calculatePositionOverTime(std::deque<ImuData> &angularVelocityList, std::deque<DvlData> &bodyVelocityList,
-                              std::vector<edge> &posOverTimeEdge,
-                              double lastScanTimeStamp, double currentScanTimeStamp, double noiseAddedStdDiv,
-                              int numberOfEdges);
 
 
-    static std::vector<double> linspace(double start_in, double end_in, int num_in);
+//    static std::vector<double> linspace(double start_in, double end_in, int num_in);
 
-    static double createVoxelOfGraph(double voxelData[], int indexStart,
-                                     Eigen::Matrix4d transformationInTheEndOfCalculation,
-                                     int numberOfPoints, graphSlamSaveStructure &usedGraph,
-                                     double ignoreDistanceToRobot, double dimensionOfVoxelData);
+
 
 
     static edge
@@ -104,20 +63,6 @@ public:
     static bool calculateStartAndEndIndexForVoxelCreation(int indexMiddle, int &indexStart, int &indexEnd,
                                                           graphSlamSaveStructure &usedGraph);
 
-
-    static Eigen::Matrix4d registrationOfTwoVoxels(double voxelData1Input[],
-                                                   double voxelData2Input[],
-                                                   Eigen::Matrix4d initialGuess,
-                                                   Eigen::Matrix3d &covarianceMatrix,
-                                                   bool useInitialAngle,
-                                                   bool useInitialTranslation,
-                                                   double cellSize,
-                                                   bool useGauss,
-                                                   scanRegistrationClass &scanRegistrationObject,
-                                                   bool debug, double potentialNecessaryForPeak = 0.1, bool multipleRadii = false,
-                                                   bool useClahe = true,
-                                                   bool useHamming = true);
-
     static Eigen::Matrix4d registrationOfTwoVoxelsFast(double voxelData1Input[],
                                                    double voxelData2Input[],
                                                    Eigen::Matrix4d initialGuess,
@@ -131,11 +76,7 @@ public:
                                                    bool useClahe = true,
                                                    bool useHamming = true);
 
-    static void
-    saveResultingRegistration(double *voxelData1, double *voxelData2, graphSlamSaveStructure &usedGraph,
-                              int dimensionOfVoxelData,
-                              double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI, bool debugRegistration,
-                              Eigen::Matrix4d currentTransformation);
+
 
     static bool
     loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved, scanRegistrationClass &scanRegistrationObject,
@@ -144,11 +85,6 @@ public:
                                bool debugRegistration, bool useInitialTranslation,
                                double potentialNecessaryForPeak = 0.1, double maxLoopClosure = 100);
 
-    static void saveResultingRegistrationTMPCOPY(int indexStart1, int indexEnd1, int indexStart2, int indexEnd2,
-                                                 graphSlamSaveStructure &usedGraph, int dimensionOfVoxelData,
-                                                 double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                                 bool debugRegistration, Eigen::Matrix4d currentTransformation,
-                                                 Eigen::Matrix4d initialGuess);
 
     static bool
     calculateEndIndexForVoxelCreationByStartIndex(int indexStart, int &indexEnd, graphSlamSaveStructure &usedGraph);

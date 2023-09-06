@@ -14,7 +14,7 @@ project(scan_forming_underwater_mapping)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages cv_bridge PATHS "/usr/local/"
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp ping360_sonar waterlinked_dvl message_generation commonbluerovmsg dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp ping360_sonar waterlinked_dvl message_generation commonbluerovmsg dynamic_reconfigure roslib)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV 4.7 REQUIRED )
 find_package(OpenGR REQUIRED)
@@ -132,7 +132,7 @@ target_include_directories(slamtools PUBLIC ${catkin_INCLUDE_DIRS}  src/slamTool
 ################################################################################
 
 add_executable(rosslamexp1 src/exampleSlamRun.cpp)
-target_link_libraries(rosslamexp1 gtsam posegraph slamtools registrationlib OpenMP::OpenMP_CXX fftw3 ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(rosslamexp1 gtsam posegraph slamtools registrationlib OpenMP::OpenMP_CXX fftw3  ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 
 

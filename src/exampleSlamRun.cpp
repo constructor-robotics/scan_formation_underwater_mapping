@@ -9,22 +9,19 @@
 #include "slamToolsRos.h"
 #include "commonbluerovmsg/saveGraph.h"
 #include "nav_msgs/OccupancyGrid.h"
-//#include "scanRegistrationClass.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 #include "std_srvs/SetBoolRequest.h"
-#include <std_srvs/SetBool.h>
-#include "commonbluerovmsg/staterobotforevaluation.h"
+
+#include <ros/package.h>
 
 
 
-#define NAME_OF_CURRENT_METHOD "ourTest"
-//#define SAVE_CALCULATION_FOLDER "/home/ubuntu/timeMeasurements/exp1TimesSaved.csv"
 
 class rosClassEKF {
 public:
     rosClassEKF(ros::NodeHandle n_, int dimensionOfRegistration, double radiusOfScanSize, int NSizeMap,
                 double mapDimension, double howOftenRegistrationPerFullScan, double loopClosureDistance,
-                bool reverseScanDirection, double rotationSonar, double removeDistanceToRobot) : graphSaved(3,
+                bool reverseScanDirection, double rotationSonar, double removeDistanceToRobot, std::string pathToPackage) : graphSaved(3,
                                                                                                             INTENSITY_BASED_GRAPH),
                                                                                                  scanRegistrationObject(
                                                                                                          dimensionOfRegistration,
@@ -50,7 +47,7 @@ public:
         publisherPoseSLAM = n_.advertise<geometry_msgs::PoseStamped>("slamEndPose", 10);
 
 
-        this->sigmaScaling = 0.1;// was 1.0
+        this->sigmaScaling = 0.1;// was 1.0 just for visualization of covariances
         this->firstSonarInput = true;
         this->firstCompleteSonarScan = true;
         this->numberOfTimesFirstScan = 0;
@@ -78,6 +75,7 @@ public:
         this->reverseScanDirection = reverseScanDirection;
         this->rotationSonar = rotationSonar;
         this->removeDistanceToRobot = removeDistanceToRobot;
+        this->pathToPackage = pathToPackage;
 
     }
 
@@ -101,7 +99,6 @@ private:
 
 
     //EKF savings
-//    std::deque<edge> posDiffOverTimeEdges;
     std::deque<double> xPositionVector, yPositionVector, zPositionVector, timeVector;
     std::deque<Eigen::Quaterniond> rotationVector;
 
@@ -124,6 +121,8 @@ private:
     bool reverseScanDirection;
     double rotationSonar;
     double removeDistanceToRobot;
+
+    std::string pathToPackage;
 
     void scanCallback(const commonbluerovmsg::SonarEcho2::ConstPtr &msg) {
         //used for locking and to make asynchron map creations possible
@@ -158,7 +157,7 @@ private:
         }
 
         // wait until enough EKF messages are there to calculate the position of the scan line
-        bool waitingForMessages = waitForEKFMessagesToArrive2(0.1, msg->header.stamp.toSec());
+        bool waitingForMessages = waitForEKFMessagesToArrive(0.1, msg->header.stamp.toSec());
         if (!waitingForMessages) {
             std::cout << "return no message found: " << msg->header.stamp.toSec() << "    " << ros::Time::now().toSec()
                       << std::endl;
@@ -201,7 +200,6 @@ private:
         double angleDiff = slamToolsRos::angleBetweenLastKeyframeAndNow(this->graphSaved);
 
         // look if angle is high enough for doing a registration
-
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         double timeToCalculate = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000.0;
         this->computationTime += timeToCalculate;
@@ -264,9 +262,6 @@ private:
                                                                                  Eigen::Matrix4d::Identity());//get voxel
 
             Eigen::Matrix3d covarianceEstimation = Eigen::Matrix3d::Zero();
-            std::cout << "consecutive registration: " << std::endl;
-            // result is matrix to transform scan 1 to scan 2 therefore later inversed + initial guess inversed
-
 
             this->currentEstimatedTransformation = slamToolsRos::registrationOfTwoVoxelsFast(voxelData1, voxelData2,
                                                                                              this->initialGuessTransformation,
@@ -279,12 +274,6 @@ private:
                                                                                              false,
                                                                                              0.1);
 
-            slamToolsRos::saveResultingRegistrationTMPCOPY(indexStart1, indexEnd1, indexStart2, indexEnd2,
-                                                           this->graphSaved, this->dimensionOfRegistration,
-                                                           this->removeDistanceToRobot,
-                                                           this->radiusOfScanSize,
-                                                           false, this->currentEstimatedTransformation,
-                                                           initialGuessTransformation);
 
             double differenceAngleBeforeAfter = generalHelpfulTools::angleDiff(
                     std::atan2(this->currentEstimatedTransformation(1, 0), this->currentEstimatedTransformation(0, 0)),
@@ -293,7 +282,7 @@ private:
 
 
 
-            //only if angle diff is smaller than 40 degree its ok. Small safety measurement
+            //only if angle diff is smaller than 40 degree its ok. Small safety measurement, which is basically never used.
             if (abs(differenceAngleBeforeAfter) < 40.0 / 180.0 * M_PI) {
                 //inverse the transformation because we want the robot transformation, not the scan transformation
                 Eigen::Matrix4d transformationEstimationRobot1_2 = this->currentEstimatedTransformation;
@@ -308,7 +297,7 @@ private:
             } else {
                 std::cout << "we just skipped that registration" << std::endl;
             }
-            std::cout << "loopClosure: " << std::endl;
+            std::cout << "loopClosures: " << std::endl;
             end = std::chrono::steady_clock::now();
             timeToCalculate = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() / 1000.0;
             double typeALCTime = timeToCalculate;
@@ -345,11 +334,9 @@ private:
             std::cout << "next: " << std::endl;
 
         }
-//        this->graphSaved.isam2OptimizeGraph(true,1);
         slamToolsRos::visualizeCurrentPoseGraph(this->graphSaved, this->publisherPathOverTime,
                                                 this->publisherMarkerArray, this->sigmaScaling,
                                                 this->publisherPoseSLAM, this->publisherMarkerArrayLoopClosures);
-//        std::cout << "huhu3" << std::endl;
     }
 
     void stateEstimationCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg) {
@@ -389,8 +376,7 @@ private:
 
         std::ofstream myFile1;
         myFile1.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/IROSResults/positionEstimationOverTime" +
-                std::string(NAME_OF_CURRENT_METHOD) + ".csv");
+                this->pathToPackage + "positionEstimationOverTime.csv");
 
 
         for (int k = 0; k < this->graphSaved.getVertexList()->size(); k++) {
@@ -412,23 +398,21 @@ private:
         return true;
     }
 
-    bool waitForEKFMessagesToArrive2(double timeDiffWait, double endStampOfNewMessage) {
+    bool waitForEKFMessagesToArrive(double timeDiffWait, double endStampOfNewMessage) {
 
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
         double timeToCalculate = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-//        std::cout << "tmp1" << std::endl;
         while (this->timeVector.empty() || this->timeVector.back() < endStampOfNewMessage) {
             ros::Duration(0.002).sleep();
             end = std::chrono::steady_clock::now();
             timeToCalculate = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-//            std::cout << timeToCalculate << std::endl;
             if (timeToCalculate > timeDiffWait * 1000) {
                 return false;
             }
         }
-//        std::cout << timeToCalculate << std::endl;
+
         return true;
     }
 
@@ -492,7 +476,7 @@ private:
 
                     positionOfIntensity =
                             transformationOfIntensityRay * rotationOfSonarAngleMatrix * positionOfIntensity;
-                    //calculate index dependent on  DIMENSION_OF_VOXEL_DATA and numberOfPoints the middle
+                    //calculate index dependent on  this->NSizeMap  and this->mapDimension the middle
                     int indexX =
                             (int) (positionOfIntensity.x() / (this->mapDimension / 2) * this->NSizeMap /
                                    2) +
@@ -505,16 +489,12 @@ private:
 
                     if (indexX < this->NSizeMap && indexY < this->NSizeMap && indexY >= 0 &&
                         indexX >= 0) {
-                        //                    std::cout << indexX << " " << indexY << std::endl;
                         //if index fits inside of our data, add that data. Else Ignore
                         voxelDataIndex[indexX + this->NSizeMap * indexY] =
                                 voxelDataIndex[indexX + this->NSizeMap * indexY] + 1;
-                        //                    std::cout << "Index: " << voxelDataIndex[indexY + numberOfPoints * indexX] << std::endl;
                         mapData[indexX + this->NSizeMap * indexY] =
                                 mapData[indexX + this->NSizeMap * indexY] +
                                 dataSet[currentPosition].intensity.intensities[j];
-                        //                    std::cout << "Intensity: " << voxelData[indexY + numberOfPoints * indexX] << std::endl;
-                        //                    std::cout << "random: " << std::endl;
                     }
                 }
             }
@@ -552,8 +532,7 @@ private:
 
         std::ofstream myFile1;
         myFile1.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/IROSResults/currentMap" +
-                std::string(NAME_OF_CURRENT_METHOD) + ".csv");
+                this->pathToPackage + "currentMap.csv");
         for (int j = 0; j < this->NSizeMap; j++) {
             for (int i = 0; i < this->NSizeMap; i++) {
                 myFile1 << mapData[j + this->NSizeMap * i] << std::endl;//number of possible rotations
@@ -589,12 +568,8 @@ public:
         for (int currentPosition = 0;
              currentPosition < dataSet.size(); currentPosition++) {
             //calculate the position of each intensity and create an index in two arrays. First in voxel data, and second save number of intensities.
-            //was 90 yaw and 180 roll
 
-            Eigen::Matrix4d transformationOfIntensityRay =
-                    generalHelpfulTools::getTransformationMatrixFromRPY(0, 0, 0.0 / 180.0 * M_PI) *
-                    generalHelpfulTools::getTransformationMatrixFromRPY(0.0 / 180.0 * M_PI, 0, 0) *
-                    dataSet[currentPosition].transformation;
+            Eigen::Matrix4d transformationOfIntensityRay = dataSet[currentPosition].transformation;
             //positionOfIntensity has to be rotated by   this->graphSaved.getVertexList()->at(indexVertex).getIntensities().angle
             Eigen::Matrix4d rotationOfSonarAngleMatrix = generalHelpfulTools::getTransformationMatrixFromRPY(0, 0,
                                                                                                              dataSet[currentPosition].intensity.angle);
@@ -638,16 +613,13 @@ public:
 
                     if (indexX < this->NSizeMap && indexY < this->NSizeMap && indexY >= 0 &&
                         indexX >= 0) {
-                        //                    std::cout << indexX << " " << indexY << std::endl;
                         //if index fits inside of our data, add that data. Else Ignore
                         voxelDataIndex[indexX + this->NSizeMap * indexY] =
                                 voxelDataIndex[indexX + this->NSizeMap * indexY] + 1;
-                        //                    std::cout << "Index: " << voxelDataIndex[indexY + numberOfPoints * indexX] << std::endl;
                         mapData[indexX + this->NSizeMap * indexY] =
                                 mapData[indexX + this->NSizeMap * indexY] +
                                 dataSet[currentPosition].intensity.intensities[j];
-                        //                    std::cout << "Intensity: " << voxelData[indexY + numberOfPoints * indexX] << std::endl;
-                        //                    std::cout << "random: " << std::endl;
+
                     }
                 }
             }
@@ -672,7 +644,6 @@ public:
                 if (minimumOfVoxelData > mapData[i]) {
                     minimumOfVoxelData = mapData[i];
                 }
-                //std::cout << voxelData[i] << std::endl;
             }
         }
 
@@ -712,14 +683,14 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "slamalgorithm");
 
 
+
     ros::V_string nodes;
-    int i = 0;
     std::string stringForRosClass;
 
 
     ros::start();
     ros::NodeHandle n_;
-
+    // load setting for SLAM
     int dimensionOfRegistration;
     n_.getParam("rosslamexp1/dimensionOfRegistration", dimensionOfRegistration);
     double radiusOfScanSize;
@@ -739,14 +710,14 @@ int main(int argc, char **argv) {
     double removeDistanceToRobot;
     n_.getParam("rosslamexp1/removeDistanceToRobot", removeDistanceToRobot);
 
-
+    // get path of package and save results in rosbag folder
+    std::string path = ros::package::getPath("scan_forming_underwater_mapping");
+    path = path+"/rosbag/";
+    std::cout << path << std::endl;
 
     rosClassEKF rosClassForTests(n_, dimensionOfRegistration, radiusOfScanSize, NSizeMap, mapDimension,
                                  howOftenRegistrationPerFullScan, loopClosureDistance, reverseScanDirection,
-                                 rotationSonar, removeDistanceToRobot);
-
-
-//    ros::spin();
+                                 rotationSonar, removeDistanceToRobot,path);
 
 
     ros::Rate loop_rate(0.1);
@@ -755,15 +726,9 @@ int main(int argc, char **argv) {
     ros::Duration(10).sleep();
 
     while (ros::ok()) {
-//        ros::spinOnce();
-
-        //rosClassForTests.updateHilbertMap();
-//        rosClassForTests.updateMap();
         rosClassForTests.createImageOfAllScans();
 
         loop_rate.sleep();
-
-        //std::cout << ros::Time::now() << std::endl;
     }
 
 

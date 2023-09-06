@@ -3,7 +3,6 @@
 //
 
 #include "slamToolsRos.h"
-//#include "generalHelpfulTools.h"
 
 void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved, ros::Publisher &publisherPath,
                                              ros::Publisher &publisherMarkerArray, double sigmaScaling,
@@ -18,13 +17,6 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
     //std::vector<vertex> vertexList =;
     for (int i = 0; i < graphSaved.getVertexList()->size(); i++) {//skip the first pointCloud
         vertex vertexElement = graphSaved.getVertexList()->at(i);
-        //pcl::PointCloud<pcl::PointXYZ> currentScanTransformed;
-        //vertexElement.getTransformation();
-        //completeTransformation = vertexElement.getTransformation();
-//        if(vertexElement.getTypeOfVertex()==graphSlamSaveStructure::POINT_CLOUD_SAVED){
-//            pcl::io::savePCDFileASCII("/home/jurobotics/DataForTests/savingRandomPCL/firstPCL.pcd",*vertexElement.getPointCloudCorrected());
-//            pcl::io::savePCDFileASCII("/home/jurobotics/DataForTests/savingRandomPCL/secondPCL.pcd",currentScanTransformed);
-//        }
 
         geometry_msgs::PoseStamped pos;
         pos.pose.position.x = vertexElement.getPositionVertex().x();
@@ -45,23 +37,20 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
     for (int i = 0; i < graphSaved.getVertexList()->size(); i = i + 100) {//skip the first pointCloud
         vertex vertexElement = graphSaved.getVertexList()->at(i);
         Eigen::Matrix3d currentCovariance = vertexElement.getCovarianceMatrix();
-//        std::cout << i << std::endl;
-//        std::cout << currentCovariance << std::endl;
+
         Eigen::SelfAdjointEigenSolver<Eigen::Matrix2d> eig(currentCovariance.block<2, 2>(0, 0));
         Eigen::Vector2d e1 = eig.eigenvectors().col(0);
         Eigen::Vector2d e2 = eig.eigenvectors().col(1);
         double l1 = eig.eigenvalues().x();
         double l2 = eig.eigenvalues().y();
-//        std::cout << eigenVector << std::endl;
-//        std::cout << eigenValues << std::endl;
+
         double phi;
         if (l2 >= l1) {
             phi = atan2(e2.y(), e2.x());
         } else {
             phi = atan2(e1.y(), e1.x());
         }
-//        double phi = atan2(e2.y(), e2.x());
-//        std::cout << currentCovariance << std::endl;
+
         visualization_msgs::Marker currentMarker;
         currentMarker.pose.position.x = vertexElement.getPositionVertex().x();
         currentMarker.pose.position.y = vertexElement.getPositionVertex().y();
@@ -69,9 +58,6 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
         Eigen::Vector3d rpyTMP = generalHelpfulTools::getRollPitchYaw(vertexElement.getRotationVertex());
         double inputAngle = generalHelpfulTools::normalizeAngle(phi + rpyTMP[2]);
         Eigen::Quaterniond tmpQuad = generalHelpfulTools::getQuaternionFromRPY(0, 0, inputAngle);
-//        Eigen::Quaterniond tmpQuad = generalHelpfulTools::getQuaternionFromRPY(0, 0, inputAngle);
-//        tmpQuad = vertexElement.getRotationVertex()*tmpQuad;
-
 
 
         currentMarker.pose.orientation.x = tmpQuad.x();
@@ -91,7 +77,7 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
         currentMarker.color.g = 1;
         currentMarker.color.b = 0;
         currentMarker.color.a = 0.1;
-//currentMarker.lifetime.sec = 10;
+        //currentMarker.lifetime.sec = 10;
         currentMarker.type = 2;
         currentMarker.id = k;
         k++;
@@ -126,10 +112,6 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
         if (graphSaved.getEdgeList()->at(i).getTypeOfEdge() ==
             LOOP_CLOSURE) {//if its a loop closure then create arrow from vertex a to vertex b
             visualization_msgs::Marker currentMarker;
-            //currentMarker.pose.position.x = pos.pose.position.x;
-            //currentMarker.pose.position.y = pos.pose.position.y;
-            //currentMarker.pose.position.z = pos.pose.position.z;
-            //currentMarker.pose.orientation.w = 1;
             currentMarker.header.frame_id = "map_ned";
             currentMarker.scale.x = 0.1;
             currentMarker.scale.y = 0.3;
@@ -167,308 +149,7 @@ void slamToolsRos::visualizeCurrentPoseGraph(graphSlamSaveStructure &graphSaved,
 
 }
 
-std::vector<std::vector<measurement>> slamToolsRos::sortToKeyframe(std::vector<measurement> &input) {
-    int currentKeyframe = input[0].keyframe;
-    std::vector<std::vector<measurement>> output;
-    std::vector<measurement> tmp1;
-    output.push_back(tmp1);
-    for (auto currentMeasurement: input) {
-        if (currentMeasurement.keyframe != currentKeyframe) {//new keyframe reached
-            std::vector<measurement> tmp;
-            currentKeyframe = currentMeasurement.keyframe;
-            output.push_back(tmp);
-            output[currentKeyframe].push_back(currentMeasurement);
-        } else {
-            output[currentKeyframe].push_back(currentMeasurement);
-        }
-    }
-    return output;
-}
-
-
-std::vector<double> slamToolsRos::linspace(double start_in, double end_in, int num_in) {
-    if (num_in < 0) {
-        std::cout << "number of linspace negative" << std::endl;
-        exit(-1);
-    }
-    std::vector<double> linspaced;
-
-    double start = start_in;
-    double end = end_in;
-    auto num = (double) num_in;
-
-    if (num == 0) { return linspaced; }
-    if (num == 1) {
-        linspaced.push_back(start);
-        return linspaced;
-    }
-
-    double delta = (end - start) / (num - 1);//stepSize
-
-    for (int i = 0; i < num - 1; ++i) {
-        linspaced.push_back(start + delta * i);
-    }
-    linspaced.push_back(end); // I want to ensure that start and end
-    // are exactly the same as the input
-    return linspaced;
-}
-
-void slamToolsRos::calculatePositionOverTime(std::deque<ImuData> &angularVelocityList,
-                                             std::deque<DvlData> &bodyVelocityList,
-                                             std::vector<edge> &posOverTimeEdge,
-                                             double lastScanTimeStamp,
-                                             double currentScanTimeStamp,
-                                             double noiseAddedStdDiv, int numberOfEdges) {//last then current
-    posOverTimeEdge.clear();
-    std::vector<double> timeSteps = slamToolsRos::linspace(lastScanTimeStamp, currentScanTimeStamp,
-                                                           numberOfEdges);// could be changed this is the number of pos+1 between the scans(10th is the scan itself)
-    std::vector<double> angularX;
-    std::vector<double> angularY;
-    std::vector<double> angularZ;
-    for (int i = 1;
-         i < timeSteps.size(); i++) {//calculate angular between lastScanTimeStamp and currentScanTimeStamp
-        std::vector<ImuData> measurementsOfInterest;
-        for (int j = 0; j < angularVelocityList.size(); j++) {
-            if (timeSteps[i - 1] <= angularVelocityList[j].timeStamp &&
-                timeSteps[i] > angularVelocityList[j].timeStamp) {
-                measurementsOfInterest.push_back(angularVelocityList[j]);
-            }
-        }
-
-        double integratorX = 0;
-        double integratorY = 0;
-        double integratorZ = 0;
-        if (measurementsOfInterest.size() > 1) {
-            for (int j = 0; j < measurementsOfInterest.size(); j++) {
-                if (j == measurementsOfInterest.size() - 1) {
-                    integratorX +=
-                            measurementsOfInterest[j].wx * (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                    integratorY +=
-                            measurementsOfInterest[j].wy * (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                    integratorZ +=
-                            measurementsOfInterest[j].wz * (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                } else {
-                    if (j == 0) {
-                        integratorX +=
-                                measurementsOfInterest[j].wx * (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                        integratorY +=
-                                measurementsOfInterest[j].wy * (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                        integratorZ +=
-                                measurementsOfInterest[j].wz * (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                    } else {
-                        integratorX += (measurementsOfInterest[j].wx + measurementsOfInterest[j - 1].wx) / 2 *
-                                       (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                        integratorY += (measurementsOfInterest[j].wy + measurementsOfInterest[j - 1].wy) / 2 *
-                                       (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                        integratorZ += (measurementsOfInterest[j].wz + measurementsOfInterest[j - 1].wz) / 2 *
-                                       (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                    }
-                }
-            }
-        } else {//only one or zero velocity measurement exists
-            integratorX = measurementsOfInterest[0].wx * (timeSteps[i] - timeSteps[i - 1]);
-            integratorY = measurementsOfInterest[0].wy * (timeSteps[i] - timeSteps[i - 1]);
-            integratorZ = measurementsOfInterest[0].wz * (timeSteps[i] - timeSteps[i - 1]);
-        }
-        angularX.push_back(integratorX);
-        angularY.push_back(integratorY);
-        angularZ.push_back(integratorZ);
-    }
-
-    std::default_random_engine generator;
-    std::normal_distribution<double> dist(0, noiseAddedStdDiv);
-    std::vector<double> linearX;
-    std::vector<double> linearY;
-    std::vector<double> linearZ;
-    for (int i = 1;
-         i < timeSteps.size(); i++) {//calculate that between lastScanTimeStamp and currentScanTimeStamp
-        std::vector<DvlData> measurementsOfInterest;
-        for (int j = 0; j < bodyVelocityList.size(); j++) {
-            if (timeSteps[i - 1] <= bodyVelocityList[j].timeStamp &&
-                timeSteps[i] > bodyVelocityList[j].timeStamp) {
-                measurementsOfInterest.push_back(bodyVelocityList[j]);
-            }
-        }
-
-        double integratorX = 0;
-        double integratorY = 0;
-        double integratorZ = 0;
-
-        if (measurementsOfInterest.size() > 1) {
-            for (int j = 0; j < measurementsOfInterest.size(); j++) {
-                if (j == measurementsOfInterest.size() - 1) {
-                    integratorX += (dist(generator) + measurementsOfInterest[j].vx) *
-                                   (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                    integratorY += (dist(generator) + measurementsOfInterest[j].vy) *
-                                   (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                    integratorZ += (dist(generator) + measurementsOfInterest[j].vz) *
-                                   (timeSteps[i] - measurementsOfInterest[j - 1].timeStamp);
-                } else {
-                    if (j == 0) {
-                        integratorX +=
-                                (dist(generator) + measurementsOfInterest[j].vx) *
-                                (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                        integratorY +=
-                                (dist(generator) + measurementsOfInterest[j].vy) *
-                                (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                        integratorZ +=
-                                (dist(generator) + measurementsOfInterest[j].vz) *
-                                (measurementsOfInterest[j].timeStamp - timeSteps[i - 1]);
-                    } else {
-                        integratorX +=
-                                (dist(generator) +
-                                 (measurementsOfInterest[j].vx + measurementsOfInterest[j - 1].vx) / 2) *
-                                (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                        integratorY +=
-                                (dist(generator) +
-                                 (measurementsOfInterest[j].vy + measurementsOfInterest[j - 1].vy) / 2) *
-                                (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                        integratorZ +=
-                                (dist(generator) +
-                                 (measurementsOfInterest[j].vz + measurementsOfInterest[j - 1].vz) / 2) *
-                                (measurementsOfInterest[j].timeStamp - measurementsOfInterest[j - 1].timeStamp);
-                    }
-                }
-            }
-        } else {//only one velocity measurement exists
-            integratorX = measurementsOfInterest[0].vx * (timeSteps[i] - timeSteps[i - 1]);
-            integratorY = measurementsOfInterest[0].vy * (timeSteps[i] - timeSteps[i - 1]);
-            integratorZ = measurementsOfInterest[0].vz * (timeSteps[i] - timeSteps[i - 1]);
-        }
-        linearX.push_back(integratorX);
-        linearY.push_back(integratorY);
-        linearZ.push_back(integratorZ);
-    }
-
-
-
-    //std::vector<vertex> &posOverTimeVertex,
-    //std::vector<edge> &posOverTimeEdge,
-
-    for (int i = 0; i < timeSteps.size() - 1; i++) {
-        Eigen::Vector3d posDiff(linearX[i], linearY[i], 0);//linear Z missing
-        Eigen::Quaterniond rotDiff = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX())//should be added somewhen(6DOF)
-                                     * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY())//should be added somewhen(6DOF)
-                                     * Eigen::AngleAxisd(angularZ[i],
-                                                         Eigen::Vector3d::UnitZ());
-        Eigen::Matrix3d covarianceMatrix = Eigen::Matrix3d::Zero();
-        edge currentEdge(0, 0, posDiff, rotDiff, covarianceMatrix, 3,
-                         INTEGRATED_POSE, 0);
-        //currentEdge.setTimeStamp(timeSteps[i + 1]);
-        posOverTimeEdge.push_back(currentEdge);
-    }
-
-}
-
-double slamToolsRos::createVoxelOfGraph(double voxelData[], int indexStart,
-                                        Eigen::Matrix4d transformationInTheEndOfCalculation,
-                                        int numberOfPoints, graphSlamSaveStructure &usedGraph,
-                                        double ignoreDistanceToRobot, double dimensionOfVoxelData) {
-    int *voxelDataIndex;
-    voxelDataIndex = (int *) malloc(sizeof(int) * numberOfPoints * numberOfPoints);
-    //set zero voxel and index
-    for (int i = 0; i < numberOfPoints * numberOfPoints; i++) {
-        voxelDataIndex[i] = 0;
-        voxelData[i] = 0;
-    }
-
-
-    int i = 0;
-    do {
-        //calculate the position of each intensity and create an index in two arrays. First in voxel data, and second save number of intensities.
-
-
-        //get position of current intensityRay
-        Eigen::Matrix4d transformationOfIntensityRay =
-                usedGraph.getVertexList()->at(indexStart).getTransformation().inverse() *
-                usedGraph.getVertexList()->at(indexStart - i).getTransformation();
-
-        //positionOfIntensity has to be rotated by    graphSaved.getVertexList()->at(indexVertex).getIntensities().angle
-        Eigen::Matrix4d rotationOfSonarAngleMatrix = generalHelpfulTools::getTransformationMatrixFromRPY(0, 0,
-                                                                                                         usedGraph.getVertexList()->at(
-                                                                                                                 indexStart -
-                                                                                                                 i).getIntensities().angle);
-
-        int ignoreDistance = (int) (ignoreDistanceToRobot /
-                                    (usedGraph.getVertexList()->at(indexStart - i).getIntensities().range /
-                                     ((double) usedGraph.getVertexList()->at(
-                                             indexStart - i).getIntensities().intensities.size())));
-
-
-        for (int j = ignoreDistance;
-             j < usedGraph.getVertexList()->at(indexStart - i).getIntensities().intensities.size(); j++) {
-            double distanceOfIntensity =
-                    j / ((double) usedGraph.getVertexList()->at(
-                            indexStart - i).getIntensities().intensities.size()) *
-                    ((double) usedGraph.getVertexList()->at(indexStart - i).getIntensities().range);
-
-            int incrementOfScan = usedGraph.getVertexList()->at(indexStart - i).getIntensities().increment;
-            for (int l = -incrementOfScan - 5; l <= incrementOfScan + 5; l++) {
-                Eigen::Vector4d positionOfIntensity(
-                        distanceOfIntensity,
-                        0,
-                        0,
-                        1);
-                double rotationOfPoint = l / 400.0;
-                Eigen::Matrix4d rotationForBetterView = generalHelpfulTools::getTransformationMatrixFromRPY(0, 0,
-                                                                                                            rotationOfPoint);
-                positionOfIntensity = rotationForBetterView * positionOfIntensity;
-
-                positionOfIntensity = transformationInTheEndOfCalculation * transformationOfIntensityRay *
-                                      rotationOfSonarAngleMatrix * positionOfIntensity;
-                //calculate index dependent on  DIMENSION_OF_VOXEL_DATA and numberOfPoints the middle
-                int indexX =
-                        (int) (positionOfIntensity.x() / (dimensionOfVoxelData / 2) * numberOfPoints /
-                               2) +
-                        numberOfPoints / 2;
-                int indexY =
-                        (int) (positionOfIntensity.y() / (dimensionOfVoxelData / 2) * numberOfPoints /
-                               2) +
-                        numberOfPoints / 2;
-
-
-                if (indexX < numberOfPoints && indexY < numberOfPoints && indexY >= 0 &&
-                    indexX >= 0) {
-                    //                    std::cout << indexX << " " << indexY << std::endl;
-                    //if index fits inside of our data, add that data. Else Ignore
-                    voxelDataIndex[indexY + numberOfPoints * indexX] =
-                            voxelDataIndex[indexY + numberOfPoints * indexX] + 1;
-                    //                    std::cout << "Index: " << voxelDataIndex[indexY + numberOfPoints * indexX] << std::endl;
-                    voxelData[indexY + numberOfPoints * indexX] =
-                            voxelData[indexY + numberOfPoints * indexX] +
-                            usedGraph.getVertexList()->at(indexStart - i).getIntensities().intensities[j];
-                    //                    std::cout << "Intensity: " << voxelData[indexY + numberOfPoints * indexX] << std::endl;
-                    //                    std::cout << "random: " << std::endl;
-                }
-            }
-        }
-        i++;
-    } while (usedGraph.getVertexList()->at(indexStart - i).getTypeOfVertex() != FIRST_ENTRY &&
-             usedGraph.getVertexList()->at(indexStart - i).getTypeOfVertex() !=
-             INTENSITY_SAVED_AND_KEYFRAME);
-
-// std::cout << "number of intensity values used: " << i << std::endl;
-
-    double maximumOfVoxelData = 0;
-    for (i = 0; i < numberOfPoints * numberOfPoints; i++) {
-        if (voxelDataIndex[i] > 0) {
-            voxelData[i] = voxelData[i] / voxelDataIndex[i];
-            if (maximumOfVoxelData < voxelData[i]) {
-                maximumOfVoxelData = voxelData[i];
-            }
-            //std::cout << voxelData[i] << std::endl;
-
-        }
-    }// @TODO calculate the maximum and normalize "somehow"
-
-
-
-
-    free(voxelDataIndex);
-    return maximumOfVoxelData;
-}
-
-//start means later in the graph . example: 800 start ;  340 end
+//start means later in the graph . example: vertex 800 start ;  vertex 340 end
 double slamToolsRos::createVoxelOfGraphStartEndPoint(double voxelData[], int indexStart, int indexEnd,
                                                      int numberOfPoints, graphSlamSaveStructure &usedGraph,
                                                      double ignoreDistanceToRobot, double dimensionOfVoxelData,
@@ -538,24 +219,18 @@ double slamToolsRos::createVoxelOfGraphStartEndPoint(double voxelData[], int ind
 
                 if (indexX < numberOfPoints && indexY < numberOfPoints && indexY >= 0 &&
                     indexX >= 0) {
-                    //                    std::cout << indexX << " " << indexY << std::endl;
                     //if index fits inside of our data, add that data. Else Ignore
                     voxelDataIndex[indexY + numberOfPoints * indexX] =
                             voxelDataIndex[indexY + numberOfPoints * indexX] + 1;
-                    //                    std::cout << "Index: " << voxelDataIndex[indexY + numberOfPoints * indexX] << std::endl;
                     voxelData[indexY + numberOfPoints * indexX] =
                             voxelData[indexY + numberOfPoints * indexX] +
                             usedGraph.getVertexList()->at(indexStart - i).getIntensities().intensities[j];
-                    //                    std::cout << "Intensity: " << voxelData[indexY + numberOfPoints * indexX] << std::endl;
-                    //                    std::cout << "random: " << std::endl;
                 }
             }
         }
         i++;
     } while (usedGraph.getVertexList()->at(indexStart - i).getTypeOfVertex() != FIRST_ENTRY &&
              indexStart - i != indexEnd);
-
-// std::cout << "number of intensity values used: " << i << std::endl;
 
     double maximumOfVoxelData = 0;
     for (i = 0; i < numberOfPoints * numberOfPoints; i++) {
@@ -564,20 +239,13 @@ double slamToolsRos::createVoxelOfGraphStartEndPoint(double voxelData[], int ind
             if (maximumOfVoxelData < voxelData[i]) {
                 maximumOfVoxelData = voxelData[i];
             }
-            //std::cout << voxelData[i] << std::endl;
 
         }
-    }// @TODO calculate the maximum and normalize "somehow"
-
-
-
+    }
 
     free(voxelDataIndex);
     return maximumOfVoxelData;
 }
-
-
-
 
 
 edge
@@ -588,19 +256,7 @@ slamToolsRos::calculatePoseDiffByTimeDepOnEKF(double startTimetoAdd, double endT
                                               std::deque<Eigen::Quaterniond> &rotationVector,
                                               std::mutex &stateEstimationMutex) {
     //this is done to make sure 1 more message is coming from the EKF directly
-    //ros::Duration(0.001).sleep();
 
-//    while (timeVector.empty()) {
-//        ros::Duration(0.002).sleep();
-//    }
-//
-//
-//    while (endTimeToAdd > timeVector[timeVector.size() - 1]) {
-//        ros::topic::waitForMessage<geometry_msgs::PoseWithCovarianceStamped>("publisherPoseEkf");
-//        ros::Duration(0.001).sleep();
-//    }
-
-    //@TEST
     std::lock_guard<std::mutex> lock(stateEstimationMutex);
     //find index of start and end
     int indexOfStart = 0;
@@ -662,9 +318,6 @@ slamToolsRos::calculatePoseDiffByTimeDepOnEKF(double startTimetoAdd, double endT
     }
 
     if (indexOfEnd > 0) {
-//        std::cout << endTimeToAdd << std::endl;
-//        std::cout << timeVector[indexOfEnd] << std::endl;
-//        std::cout << timeVector[indexOfEnd + 1] << std::endl;
 
 
         double interpolationFactor = ((endTimeToAdd - timeVector[indexOfEnd]) /
@@ -687,18 +340,13 @@ slamToolsRos::calculatePoseDiffByTimeDepOnEKF(double startTimetoAdd, double endT
                                                                                    transformationOfEKFEnd,
                                                                                    interpolationFactor);
     }
-    //std::cout << diffMatrix << std::endl;
     Eigen::Vector3d tmpPosition = transformationTMP.block<3, 1>(0, 3);
-    //WRONG HERE
-//    double tmpX = tmpPosition[0];
-//    double tmpY = tmpPosition[1];
-//    tmpPosition[0] = tmpY;
-//    tmpPosition[1] = -tmpX;
+
     //set z pos diff to zero
     tmpPosition[2] = 0;
     Eigen::Quaterniond tmpRot(transformationTMP.block<3, 3>(0, 0));
     Eigen::Vector3d rpyTMP = generalHelpfulTools::getRollPitchYaw(tmpRot);
-    //set rp on zero only yaw interesting
+    //set rp on zero only yaw is interesting
     tmpRot = generalHelpfulTools::getQuaternionFromRPY(0, 0, rpyTMP[2]);//was +0.00001
     Eigen::Matrix3d positionCovariance = Eigen::Matrix3d::Zero();
     edge tmpEdge(0, 0, tmpPosition, tmpRot, positionCovariance, 3,
@@ -860,150 +508,31 @@ bool slamToolsRos::calculateEndIndexForVoxelCreationByStartIndex(int indexStart,
 }
 
 
-//creates transformation from voxel 1 to be close to voxel 2
-Eigen::Matrix4d slamToolsRos::registrationOfTwoVoxels(double voxelData1Input[],
-                                                      double voxelData2Input[],
-                                                      Eigen::Matrix4d initialGuess,
-                                                      Eigen::Matrix3d &covarianceMatrix,
-                                                      bool useInitialAngle,
-                                                      bool useInitialTranslation,
-                                                      double cellSize,
-                                                      bool useGauss,
-                                                      scanRegistrationClass &scanRegistrationObject,
-                                                      bool debug, double potentialNecessaryForPeak, bool multipleRadii,
-                                                      bool useClahe,
-                                                      bool useHamming) {
-
-
-    std::vector<transformationPeak> listOfTransformations = scanRegistrationObject.registrationOfTwoVoxelsSOFFTAllSoluations(
-            voxelData1Input, voxelData2Input, cellSize, useGauss, debug, potentialNecessaryForPeak,multipleRadii,useClahe,useHamming);
-    double initialAngle = std::atan2(initialGuess(1, 0),
-                                     initialGuess(0, 0));
-    std::vector<transformationPeak> potentialTranslationsWithAngle;
-    if (listOfTransformations.size() > 1) {
-        potentialTranslationsWithAngle.push_back(listOfTransformations[0]);
-
-        if (useInitialAngle) {
-            for (int i = 1; i < listOfTransformations.size(); i++) {
-
-                if (abs(generalHelpfulTools::angleDiff(potentialTranslationsWithAngle[0].potentialRotation.angle,
-                                                       initialAngle)) >
-                    abs(generalHelpfulTools::angleDiff(listOfTransformations[i].potentialRotation.angle,
-                                                       initialAngle))) {
-                    potentialTranslationsWithAngle[0] = listOfTransformations[i];
-                }
-            }
-        } else {
-            potentialTranslationsWithAngle = potentialTranslationsWithAngle;
-        }
-    } else {
-        potentialTranslationsWithAngle.push_back(listOfTransformations[0]);
-    }
-
-    Eigen::Vector2d posVector = initialGuess.block<2, 1>(0, 3);
-    double maximumValue = 0;
-    int indexMaximumAngle = 0;
-    int indexMaximumTranslation = 0;
-    if (useInitialTranslation) {
-        for (int i = 0; i < potentialTranslationsWithAngle.size(); i++) {
-            for (int j = 0; j < potentialTranslationsWithAngle[i].potentialTranslations.size(); j++) {
-                if ((potentialTranslationsWithAngle[i].potentialTranslations[j].translationSI - posVector).norm() <
-                    (potentialTranslationsWithAngle[indexMaximumAngle].potentialTranslations[indexMaximumTranslation].translationSI -
-                     posVector).norm()) {
-                    indexMaximumAngle = i;
-                    indexMaximumTranslation = j;
-                }
-            }
-        }
-
-    } else {
-        for (int i = 0; i < potentialTranslationsWithAngle.size(); i++) {
-            for (int j = 0; j < potentialTranslationsWithAngle[i].potentialTranslations.size(); j++) {
-                if (potentialTranslationsWithAngle[i].potentialTranslations[j].peakHeight >
-                    potentialTranslationsWithAngle[indexMaximumAngle].potentialTranslations[indexMaximumTranslation].peakHeight) {
-                    indexMaximumAngle = i;
-                    indexMaximumTranslation = j;
-                }
-            }
-        }
-    }
-
-    //create matrix4d
-    Eigen::Matrix4d returnTransformation = generalHelpfulTools::getTransformationMatrixFromRPY(0, 0,
-                                                                                               potentialTranslationsWithAngle[indexMaximumAngle].potentialRotation.angle);
-
-    returnTransformation.block<2, 1>(0,
-                                     3) = potentialTranslationsWithAngle[indexMaximumAngle].potentialTranslations[indexMaximumTranslation].translationSI;
-    covarianceMatrix.block<2, 2>(0,
-                                 0) = potentialTranslationsWithAngle[indexMaximumAngle].potentialTranslations[indexMaximumTranslation].covariance;
-    covarianceMatrix(2, 2) = potentialTranslationsWithAngle[indexMaximumAngle].potentialRotation.covariance;
-    return returnTransformation;
-}
 Eigen::Matrix4d slamToolsRos::registrationOfTwoVoxelsFast(double voxelData1Input[],
-                                                      double voxelData2Input[],
-                                                      Eigen::Matrix4d initialGuess,
-                                                      Eigen::Matrix3d &covarianceMatrix,
-                                                      bool useInitialAngle,
-                                                      bool useInitialTranslation,
-                                                      double cellSize,
-                                                      bool useGauss,
-                                                      scanRegistrationClass &scanRegistrationObject,
-                                                      bool debug, double potentialNecessaryForPeak, bool multipleRadii,
-                                                      bool useClahe,
-                                                      bool useHamming){
+                                                          double voxelData2Input[],
+                                                          Eigen::Matrix4d initialGuess,
+                                                          Eigen::Matrix3d &covarianceMatrix,
+                                                          bool useInitialAngle,
+                                                          bool useInitialTranslation,
+                                                          double cellSize,
+                                                          bool useGauss,
+                                                          scanRegistrationClass &scanRegistrationObject,
+                                                          bool debug, double potentialNecessaryForPeak,
+                                                          bool multipleRadii,
+                                                          bool useClahe,
+                                                          bool useHamming) {
 
 
-
-    std::cout << "test1" << std::endl;
     Eigen::Matrix4d returnMatrix = scanRegistrationObject.registrationOfTwoVoxelsSOFFTFast(voxelData1Input,
-            voxelData2Input,
-            initialGuess,covarianceMatrix,useInitialAngle,useInitialTranslation,cellSize,useGauss,debug);
+                                                                                           voxelData2Input,
+                                                                                           initialGuess,
+                                                                                           covarianceMatrix,
+                                                                                           useInitialAngle,
+                                                                                           useInitialTranslation,
+                                                                                           cellSize, useGauss, debug);
 
 
     return returnMatrix;
-}
-void slamToolsRos::saveResultingRegistration(double *voxelData1, double *voxelData2,
-                                             graphSlamSaveStructure &usedGraph, int dimensionOfVoxelData,
-                                             double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                             bool debugRegistration, Eigen::Matrix4d currentTransformation) {
-
-
-    if (debugRegistration) {
-//        voxelData1 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-//        voxelData2 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-
-
-//        double maximumVoxel1 = slamToolsRos::createVoxelOfGraph(voxelData1,
-//                                                                indexFirstKeyFrame,
-//                                                                currentTransformation,
-//                                                                dimensionOfVoxelData, usedGraph,
-//                                                                ignoreDistanceToRobot,
-//                                                                distanceOfVoxelDataLengthSI);//get voxel
-//
-//        double maximumVoxel2 = slamToolsRos::createVoxelOfGraph(voxelData2,
-//                                                                indexSecondKeyFrame,
-//                                                                Eigen::Matrix4d::Identity(),
-//                                                                dimensionOfVoxelData, usedGraph,
-//                                                                ignoreDistanceToRobot,
-//                                                                distanceOfVoxelDataLengthSI);//get voxel
-        std::ofstream myFile1, myFile2;
-        myFile1.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/resultVoxel1.csv");
-        myFile2.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/resultVoxel2.csv");
-        for (int j = 0; j < dimensionOfVoxelData; j++) {
-            for (int i = 0; i < dimensionOfVoxelData; i++) {
-                myFile1 << voxelData1[j + dimensionOfVoxelData * i]; // real part
-                myFile1 << "\n";
-                myFile2 << voxelData2[j + dimensionOfVoxelData * i]; // imaginary part
-                myFile2 << "\n";
-            }
-        }
-        myFile1.close();
-        myFile2.close();
-        free(voxelData1);
-        free(voxelData2);
-    }
 }
 
 
@@ -1014,10 +543,10 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
                                          double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
                                          bool debugRegistration, bool useInitialTranslation,
                                          double potentialNecessaryForPeak, double maxLoopClosure) {
-//    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 
     Eigen::Vector3d estimatedPosLastPoint = graphSaved.getVertexList()->back().getPositionVertex();
+    // we dont look for loop closures in the first 250 vertexes, and the last 500
     int ignoreStartLoopClosure = 250; // 450
     int ignoreEndLoopClosure = 500;
     if (graphSaved.getVertexList()->size() < ignoreEndLoopClosure) {
@@ -1026,7 +555,7 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
     std::vector<int> potentialLoopClosureVector;
     int potentialLoopClosure = ignoreStartLoopClosure;
     for (int s = ignoreStartLoopClosure; s < graphSaved.getVertexList()->size() - ignoreEndLoopClosure; s++) {
-        //dist.row(s) = (graphSaved.getVertexList()[s].getPositionVertex() - estimatedPosLastPoint).norm();
+
         double d1 = sqrt(
                 pow((estimatedPosLastPoint.x() - graphSaved.getVertexList()->at(s).getPositionVertex().x()), 2) +
                 pow((estimatedPosLastPoint.y() - graphSaved.getVertexList()->at(s).getPositionVertex().y()), 2));
@@ -1043,9 +572,6 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
 
     potentialLoopClosureVector.push_back(potentialLoopClosure);
 
-//    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-//    std::cout << "calculation For Loop Closure Potential: "
-//              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
     double d2 = sqrt(
             pow((estimatedPosLastPoint.x() -
                  graphSaved.getVertexList()->at(potentialLoopClosureVector[0]).getPositionVertex().x()), 2) +
@@ -1054,9 +580,6 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
     if (maxLoopClosure < d2 || potentialLoopClosure == ignoreStartLoopClosure) {
         return false;
     }
-
-
-//        std::shuffle(potentialLoopClosureVector.begin(), potentialLoopClosureVector.end(), std::mt19937(std::random_device()()));
 
     int loopclosureNumber = 0;
     bool foundLoopClosure = false;
@@ -1079,12 +602,6 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
         slamToolsRos::calculateEndIndexForVoxelCreationByStartIndex(indexStart1,
                                                                     indexEnd1, graphSaved);
 
-//        double maximumVoxel1 = slamToolsRos::createVoxelOfGraph(voxelData1,
-//                                                                graphSaved.getVertexList()->back().getKey(),
-//                                                                Eigen::Matrix4d::Identity(),
-//                                                                dimensionOfVoxelData, graphSaved,
-//                                                                ignoreDistanceToRobot,
-//                                                                distanceOfVoxelDataLengthSI);//get voxel
         double maximumVoxel1 = slamToolsRos::createVoxelOfGraphStartEndPoint(voxelData1,
                                                                              indexStart1, indexEnd1,
                                                                              dimensionOfVoxelData,
@@ -1107,44 +624,23 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
                  graphSaved.getVertexList()->at(indexStart2).getTransformation()).inverse();
         Eigen::Matrix3d covarianceEstimation = Eigen::Matrix3d::Zero();
         Eigen::Matrix4d currentTransformation = slamToolsRos::registrationOfTwoVoxelsFast(voxelData1,
-                                                                                      voxelData2,
-                                                                                      initialGuessTransformation,
-                                                                                      covarianceEstimation,
-                                                                                      true, true,
-                                                                                      (double) distanceOfVoxelDataLengthSI /
-                                                                                      (double) dimensionOfVoxelData,
-                                                                                      false, scanRegistrationObject,
-                                                                                      debugRegistration,
-                                                                                      potentialNecessaryForPeak);
-
-//            std::cout << "Found Loop Closure with fitnessScore: " << fitnessScore << std::endl;
-//        std::cout << "Estimated Transformation:" << std::endl;
-//        std::cout << currentTransformation.inverse() << std::endl;
-////
-//        std::cout << "initial Guess Transformation:" << std::endl;
-//        std::cout << initialGuessTransformation.inverse() << std::endl;
-////
-//        std::cout << "covarianceEstimation" << std::endl;
-//
-//        std::cout << covarianceEstimation << std::endl;
-//        std::cout << "Initial guess angle: "
-//                  << std::atan2(initialGuessTransformation(1, 0), initialGuessTransformation(0, 0)) *
-//                     180 / M_PI
-//                  << std::endl;
-//        std::cout << "Registration angle: "
-//                  <<
-//                  std::atan2(currentTransformation(1, 0), currentTransformation(0, 0)) *
-//                  180 / M_PI << std::endl;
-
-//            saveResultingRegistration( graphSaved.getVertexList()->back().getKey(), potentialKey);
+                                                                                          voxelData2,
+                                                                                          initialGuessTransformation,
+                                                                                          covarianceEstimation,
+                                                                                          true, true,
+                                                                                          (double) distanceOfVoxelDataLengthSI /
+                                                                                          (double) dimensionOfVoxelData,
+                                                                                          false, scanRegistrationObject,
+                                                                                          debugRegistration,
+                                                                                          potentialNecessaryForPeak);
 
 
-        slamToolsRos::saveResultingRegistrationTMPCOPY(indexStart1,
-                                                       indexEnd1, indexStart2, indexEnd2, graphSaved,
-                                                       dimensionOfVoxelData,
-                                                       ignoreDistanceToRobot, distanceOfVoxelDataLengthSI,
-                                                       debugRegistration, currentTransformation,
-                                                       initialGuessTransformation);
+//        slamToolsRos::saveResultingRegistrationTMPCOPY(indexStart1,
+//                                                       indexEnd1, indexStart2, indexEnd2, graphSaved,
+//                                                       dimensionOfVoxelData,
+//                                                       ignoreDistanceToRobot, distanceOfVoxelDataLengthSI,
+//                                                       debugRegistration, currentTransformation,
+//                                                       initialGuessTransformation);
 
         //inverse the transformation because we want the robot transformation, not the scan transformation
         Eigen::Matrix4d transformationEstimationRobot1_2 = currentTransformation.inverse();
@@ -1166,69 +662,6 @@ slamToolsRos::loopDetectionByClosestPath(graphSlamSaveStructure &graphSaved,
     return false;
 }
 
-
-void slamToolsRos::saveResultingRegistrationTMPCOPY(int indexStart1, int indexEnd1, int indexStart2, int indexEnd2,
-                                                    graphSlamSaveStructure &usedGraph, int dimensionOfVoxelData,
-                                                    double ignoreDistanceToRobot, double distanceOfVoxelDataLengthSI,
-                                                    bool debugRegistration, Eigen::Matrix4d currentTransformation,
-                                                    Eigen::Matrix4d initialGuess) {
-
-
-    if (debugRegistration) {
-        double *voxelData1;
-        double *voxelData2;
-        voxelData1 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-        voxelData2 = (double *) malloc(sizeof(double) * dimensionOfVoxelData * dimensionOfVoxelData);
-
-
-        double maximumVoxel1 = slamToolsRos::createVoxelOfGraphStartEndPoint(voxelData1,
-                                                                             indexStart1, indexEnd1,
-                                                                             dimensionOfVoxelData,
-                                                                             usedGraph,
-                                                                             ignoreDistanceToRobot,
-                                                                             distanceOfVoxelDataLengthSI,
-                                                                             currentTransformation);
-
-        double maximumVoxel2 = slamToolsRos::createVoxelOfGraphStartEndPoint(voxelData2,
-                                                                             indexStart2, indexEnd2,
-                                                                             dimensionOfVoxelData,
-                                                                             usedGraph,
-                                                                             ignoreDistanceToRobot,
-                                                                             distanceOfVoxelDataLengthSI,
-                                                                             Eigen::Matrix4d::Identity());
-
-
-        std::ofstream myFile1, myFile2;
-        myFile1.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/resultVoxel1.csv");
-        myFile2.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/resultVoxel2.csv");
-        for (int j = 0; j < dimensionOfVoxelData; j++) {
-            for (int i = 0; i < dimensionOfVoxelData; i++) {
-                myFile1 << voxelData1[j + dimensionOfVoxelData * i]; // real part
-                myFile1 << "\n";
-                myFile2 << voxelData2[j + dimensionOfVoxelData * i]; // imaginary part
-                myFile2 << "\n";
-            }
-        }
-        myFile1.close();
-        myFile2.close();
-        free(voxelData1);
-        free(voxelData2);
-
-
-        std::ofstream myFile12;
-        myFile12.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/initialGuess.csv");
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                myFile12 << initialGuess(i, j) << " ";//number of possible rotations
-            }
-            myFile12 << "\n";
-        }
-        myFile12.close();
-    }
-}
 
 
 

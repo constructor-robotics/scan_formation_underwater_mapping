@@ -8,19 +8,10 @@
 #include "sofftCorrelationClass.h"
 #include "PeakFinder.h"
 #include "generalHelpfulTools.h"
-//#include "slamToolsRos.h"
 
-//#include <pcl/io/pcd_io.h>
-//#include <pcl/io/ply_io.h>
-//#include <pcl/common/transforms.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
-
-//#include <CGAL/Simple_cartesian.h>
-//#include <CGAL/Min_sphere_of_spheres_d.h>
-//#include <CGAL/Min_sphere_of_points_d_traits_2.h>
-//#include <CGAL/Random.h>
 
 #include <iostream>
 #include <fstream>
@@ -188,24 +179,12 @@ public:
                                                                                          int numberOfRotationForDebug = 0,
                                                                                          double potentialNecessaryForPeak = 0.1);
 
-    std::vector<translationPeak>
-    peakDetectionOf2DCorrelationSimpleDouble1D(double maximumCorrelation, double cellSize, int impactOfNoiseFactor = 2,
-                                               double percentageOfMaxCorrelationIgnored = 0.10);
 
-    std::vector<translationPeak>
-    peakDetectionOf2DCorrelationOpenCVHoughTransform(double maximumCorrelation, double cellSize,
-                                                     int impactOfNoiseFactor = 2,
-                                                     double percentageOfMaxCorrelationIgnored = 0.10);
 
     bool isPeak(cv::Mat mx[], std::vector<cv::Point> &conn_points);
 
-    cv::Mat imregionalmax(cv::Mat &src);
 
     double normalizationFactorCalculation(int x, int y);
-
-    cv::Mat opencv_imextendedmax(cv::Mat &inputMatrix, double hParam);
-
-    void imextendedmax_imreconstruct(cv::Mat g, cv::Mat f, cv::Mat &dest);
 
     std::vector<translationPeak>
     peakDetectionOf2DCorrelationFindPeaksLibrary(double cellSize, double potentialNecessaryForPeak = 0.1,

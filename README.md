@@ -13,7 +13,9 @@ Special Librarys necessary:
 2. OpenCV 4.7 `https://github.com/opencv/opencv.git`
 
 All the other Libraries are either standard(Eigen, ROS, OpenGT etc.), or inside this package.(FMS registration, Peak detection, Json)
-An Example Bag, where the SLAM can be performed on is at XXX 
+An Example Bag, where the SLAM can be performed on is at included in this package. 
+
+A Service is up for saving the current MAP + Graph. The String in the service is not used. The map is saved in the rosbag folder.
 
 
 

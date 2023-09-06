@@ -29,7 +29,6 @@ Eigen::Matrix4d scanRegistrationClass::registrationOfTwoVoxelsSOFFTFast(double v
                                                                         bool debug) {
 
     std::lock_guard<std::mutex> guard(*this->oursMutex);
-    std::cout << "Starting soft: " <<this->sizeVoxelData << std::endl;
 
     //changing voxel 1 and 2 because we want to have the transformation from 1 to 2 and not from 2 to 1(which is the registration)@TODO
     return mySofftRegistrationClass.registrationOfTwoVoxelsSOFFTFast(voxelData1Input,
