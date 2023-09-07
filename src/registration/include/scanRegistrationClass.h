@@ -41,9 +41,9 @@ public:
 
 
 
-    double
-    sofftRegistrationVoxel2DRotationOnly(double voxelData1Input[], double voxelData2Input[], double goodGuessAlpha,double &covariance,
-                                         bool debug = false);
+//    double
+//    sofftRegistrationVoxel2DRotationOnly(double voxelData1Input[], double voxelData2Input[], double goodGuessAlpha,double &covariance,
+//                                         bool debug = false);
 
 
 
@@ -55,16 +55,6 @@ public:
                                                      double cellSize,
                                                      bool useGauss,
                                                      bool debug = false);
-
-    std::vector<transformationPeak> registrationOfTwoVoxelsSOFFTAllSoluations(double voxelData1Input[],
-                                                                              double voxelData2Input[],
-                                                                              double cellSize,
-                                                                              bool useGauss,
-                                                                              bool debug = false,
-                                                                              double potentialNecessaryForPeak = 0.1,
-                                                                              bool multipleRadii = false,
-                                                                              bool useClahe = true,
-                                                                              bool useHamming = true);
 
 
 

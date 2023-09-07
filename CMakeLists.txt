@@ -14,7 +14,7 @@ project(scan_forming_underwater_mapping)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages cv_bridge PATHS "/usr/local/"
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp ping360_sonar waterlinked_dvl message_generation commonbluerovmsg dynamic_reconfigure roslib)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg roscpp waterlinked_dvl message_generation commonbluerovmsg dynamic_reconfigure roslib)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV 4.7 REQUIRED )
 find_package(OpenGR REQUIRED)

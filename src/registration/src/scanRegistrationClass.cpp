@@ -9,14 +9,14 @@
 
 
 
-double scanRegistrationClass::sofftRegistrationVoxel2DRotationOnly(double voxelData1Input[], double voxelData2Input[],
-                                                                   double goodGuessAlpha,double &covariance, bool debug) {
-
-
-    return mySofftRegistrationClass.sofftRegistrationVoxel2DRotationOnly(voxelData1Input, voxelData2Input,
-                                                                         goodGuessAlpha,covariance, debug);
-
-}
+//double scanRegistrationClass::sofftRegistrationVoxel2DRotationOnly(double voxelData1Input[], double voxelData2Input[],
+//                                                                   double goodGuessAlpha,double &covariance, bool debug) {
+//
+//
+//    return mySofftRegistrationClass.sofftRegistrationVoxel2DRotationOnly(voxelData1Input, voxelData2Input,
+//                                                                         goodGuessAlpha,covariance, debug);
+//
+//}
 
 Eigen::Matrix4d scanRegistrationClass::registrationOfTwoVoxelsSOFFTFast(double voxelData1Input[],
                                                                         double voxelData2Input[],
@@ -40,25 +40,25 @@ Eigen::Matrix4d scanRegistrationClass::registrationOfTwoVoxelsSOFFTFast(double v
                                                                      debug);
 }
 
-std::vector<transformationPeak>
-scanRegistrationClass::registrationOfTwoVoxelsSOFFTAllSoluations(double voxelData1Input[],
-                                                                 double voxelData2Input[],
-                                                                 double cellSize,
-                                                                 bool useGauss,
-                                                                 bool debug, double potentialNecessaryForPeak,
-                                                                 bool multipleRadii,
-                                                                 bool useClahe,
-                                                                 bool useHamming) {
-
-    std::lock_guard<std::mutex> guard(*this->oursMutex);
-
-    return mySofftRegistrationClass.registrationOfTwoVoxelsSOFFTAllSoluations(voxelData1Input,
-                                                                              voxelData2Input,
-                                                                              cellSize,
-                                                                              useGauss,
-                                                                              debug, potentialNecessaryForPeak,
-                                                                              multipleRadii,
-                                                                              useClahe,
-                                                                              useHamming);
-}
+//std::vector<transformationPeak>
+//scanRegistrationClass::registrationOfTwoVoxelsSOFFTAllSoluations(double voxelData1Input[],
+//                                                                 double voxelData2Input[],
+//                                                                 double cellSize,
+//                                                                 bool useGauss,
+//                                                                 bool debug, double potentialNecessaryForPeak,
+//                                                                 bool multipleRadii,
+//                                                                 bool useClahe,
+//                                                                 bool useHamming) {
+//
+//    std::lock_guard<std::mutex> guard(*this->oursMutex);
+//
+//    return mySofftRegistrationClass.registrationOfTwoVoxelsSOFFTAllSoluations(voxelData1Input,
+//                                                                              voxelData2Input,
+//                                                                              cellSize,
+//                                                                              useGauss,
+//                                                                              debug, potentialNecessaryForPeak,
+//                                                                              multipleRadii,
+//                                                                              useClahe,
+//                                                                              useHamming);
+//}
 

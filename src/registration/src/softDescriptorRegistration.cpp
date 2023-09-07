@@ -558,7 +558,6 @@ Eigen::Matrix4d softDescriptorRegistration::registrationOfTwoVoxelsSOFFTFast(dou
     std::vector<translationPeak> listOfTranslations;
     std::vector<Eigen::Matrix4d> listOfTransformations;
 
-//   std::vector<double> maximumHeightPeakList;
     std::vector<rotationPeak> estimatedAngles;
     double angleCovariance;
     double angleTMP = this->sofftRegistrationVoxel2DRotationOnly(voxelData1Input, voxelData2Input, goodGuessAlpha,
@@ -569,9 +568,6 @@ Eigen::Matrix4d softDescriptorRegistration::registrationOfTwoVoxelsSOFFTFast(dou
     rotationPeakTMP.covariance = angleCovariance;
     estimatedAngles.push_back(rotationPeakTMP);
 
-
-
-//    std::cout << "number of possible solutions: " << estimatedAngles.size() << std::endl;
 
     int angleIndex = 0;
     for (auto &estimatedAngle: estimatedAngles) {
@@ -656,133 +652,6 @@ Eigen::Matrix4d softDescriptorRegistration::registrationOfTwoVoxelsSOFFTFast(dou
     covarianceMatrix(2, 2) = angleCovariance;
 
     return listOfTransformations[indexHighestPeak];//should be the transformation matrix from 1 to 2
-}
-
-std::vector<transformationPeak>
-softDescriptorRegistration::registrationOfTwoVoxelsSOFFTAllSoluations(double voxelData1Input[],
-                                                                      double voxelData2Input[],
-                                                                      double cellSize,
-                                                                      bool useGauss,
-                                                                      bool debug, double potentialNecessaryForPeak,bool multipleRadii,
-                                                                      bool useClahe,
-                                                                      bool useHamming) {
-
-    double timeToCalculate;
-
-
-    std::vector<transformationPeak> listOfTransformations;
-    std::vector<double> maximumHeightPeakList;
-    std::vector<rotationPeak> estimatedAnglePeak;
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    estimatedAnglePeak = this->sofftRegistrationVoxel2DListOfPossibleRotations(voxelData1Input, voxelData2Input,
-                                                                               debug,multipleRadii,useClahe,useHamming);
-
-    int angleIndex = 0;
-    for (auto &estimatedAngle: estimatedAnglePeak) {
-
-        begin = std::chrono::steady_clock::now();
-
-        //copy data
-        for (int i = 0; i < N * N; i++) {
-            this->voxelData1[i] = voxelData1Input[i];
-            this->voxelData2[i] = voxelData2Input[i];
-        }
-
-        cv::Mat magTMP1(this->N, this->N, CV_64F, voxelData1);
-        cv::Mat magTMP2(this->N, this->N, CV_64F, voxelData2);
-        //add gaussian blur
-        if (useGauss) {
-            for (int i = 0; i < 2; i++) {
-                cv::GaussianBlur(magTMP1, magTMP1, cv::Size(9, 9), 0);
-                cv::GaussianBlur(magTMP2, magTMP2, cv::Size(9, 9), 0);
-            }
-        }
-
-        cv::Point2f pc(magTMP1.cols / 2., magTMP1.rows / 2.);
-        //positive values mean COUNTER CLOCK WISE (open cv description) threfore negative rotation
-        cv::Mat r = cv::getRotationMatrix2D(pc, estimatedAngle.angle * 180.0 / M_PI, 1.0);
-        cv::warpAffine(magTMP1, magTMP1, r, magTMP1.size()); // what size I should use?
-
-//        end = std::chrono::steady_clock::now();
-//        std::cout << "2: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
-//        begin = std::chrono::steady_clock::now();
-
-        std::vector<translationPeak> potentialTranslations = this->sofftRegistrationVoxel2DTranslationAllPossibleSolutions(
-                voxelData1, voxelData2,
-                cellSize,
-                1.0,
-                debug, angleIndex, potentialNecessaryForPeak);
-//        end = std::chrono::steady_clock::now();
-//        std::cout << "3: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
-        transformationPeak transformationPeakTMP;
-        transformationPeakTMP.potentialRotation = estimatedAngle;
-        transformationPeakTMP.potentialTranslations = potentialTranslations;
-
-        listOfTransformations.push_back(transformationPeakTMP);
-        angleIndex++;
-    }
-
-    // save list of transformations
-    if (debug) {
-
-        std::ofstream myFile12;
-        myFile12.open(
-                "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/dataForReadIn.csv");
-
-        myFile12 << listOfTransformations.size();//number of possible rotations
-        myFile12 << "\n";
-        for (auto &listOfTransformation: listOfTransformations) {
-            myFile12 << listOfTransformation.potentialTranslations.size();//numberOfPossibleTranslations
-            myFile12 << "\n";
-        }
-        myFile12 << cellSize;//numberOfPossibleTranslations
-        myFile12 << "\n";
-        myFile12.close();
-
-    }
-    //save every transformation in files.
-    if (debug) {
-
-        int numberOfTransformations = 0;
-        for (auto &listOfTransformation: listOfTransformations) {
-            Eigen::Matrix4d currentMatrix = Eigen::Matrix4d::Identity();
-            //rotation
-            currentMatrix.block<3, 3>(0, 0) = generalHelpfulTools::getQuaternionFromRPY(0, 0,
-                                                                                        listOfTransformation.potentialRotation.angle).toRotationMatrix();
-            for (auto &potentialTranslation: listOfTransformation.potentialTranslations) {
-                //translation
-                currentMatrix.block<3, 1>(0, 3) = Eigen::Vector3d(potentialTranslation.translationSI.x(),
-                                                                  potentialTranslation.translationSI.y(), 0);
-
-                std::ofstream myFile12;
-                myFile12.open(
-                        "/home/tim-external/Documents/matlabTestEnvironment/registrationFourier/csvFiles/potentialTransformation" +
-                        std::to_string(numberOfTransformations) + ".csv");
-                for (int i = 0; i < 4; i++) {
-                    for (int j = 0; j < 4; j++) {
-                        myFile12 << currentMatrix(i, j) << " ";//number of possible rotations
-                    }
-                    myFile12 << "\n";
-                }
-                myFile12 << "\n";
-                myFile12 << potentialTranslation.peakHeight;
-                myFile12 << "\n";
-
-                for (int i = 0; i < 2; i++) {
-                    for (int j = 0; j < 2; j++) {
-                        myFile12 << potentialTranslation.covariance(i, j) << " ";//number of possible rotations
-                    }
-                    myFile12 << "\n";
-                }
-                myFile12.close();
-                numberOfTransformations++;
-            }
-
-        }
-
-
-    }
-    return listOfTransformations;
 }
 
 
