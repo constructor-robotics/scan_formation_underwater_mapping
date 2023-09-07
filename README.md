@@ -17,4 +17,8 @@ An Example Bag, where the SLAM can be performed on is at included in this packag
 A Service is up for saving the current MAP + Graph. The String in the service is not used. The map is saved in the rosbag folder.
 
 
-
+Cite:
+```
+T. Hansen and A. Birk, "Synthetic Scan Formation for Underwater Mapping
+with Low-Cost Mechanical Scanning Sonars (MSS)," in IEEE Access, doi: 10.1109/ACCESS.2023.3312186.
+```
